@@ -1,0 +1,145 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../site.config.ts';
+
+// Bağlantılar merkezi ayar dosyasından gelir; boş bırakılanlar gösterilmez.
+const links = [
+	{ label: 'E-posta', value: siteConfig.links.email, href: `mailto:${siteConfig.links.email}` },
+	{ label: 'GitHub', value: siteConfig.links.github, href: siteConfig.links.github },
+	{ label: 'X', value: siteConfig.links.x, href: siteConfig.links.x },
+	{ label: 'LinkedIn', value: siteConfig.links.linkedin, href: siteConfig.links.linkedin },
+].filter((link) => link.value);
+---
+
+<BaseLayout
+	title="Hakkımda"
+	description={`${siteConfig.author} hakkında kısa bilgi ve iletişim bağlantıları.`}
+>
+	<div class="wrap about">
+		<header class="about__header">
+			<img
+				class="about__photo"
+				src={siteConfig.profileImage}
+				alt={`${siteConfig.author} profil fotoğrafı`}
+				width="160"
+				height="160"
+				loading="eager"
+				decoding="async"
+			/>
+
+			<div>
+				<h1 class="page-title">Hakkımda</h1>
+				<p class="page-intro">{siteConfig.authorBio}</p>
+			</div>
+		</header>
+
+		<div class="prose about__bio">
+			<!--
+				Buradaki metni kendi biyografinle değiştir.
+				Markdown değil, doğrudan HTML paragrafları kullanılıyor.
+			-->
+			<p>
+				Bu bölüm şimdilik bir örnek metindir. Burada kendini tanıtabilir, neden yazdığını ve bu
+				sitede ne tür içerikler yayınladığını anlatabilirsin.
+			</p>
+			<p>
+				Sitede üç tür içerik bulunur: kendi düşüncelerini paylaştığın <a
+					class="text-link"
+					href="/yazilar/">fikir yazıları</a
+				>, kaynaklara dayanan <a class="text-link" href="/arastirmalar/">araştırmalar</a> ve kısa
+				<a class="text-link" href="/notlar/">notlar</a>.
+			</p>
+			<p>
+				Bu metni değiştirmek için <code>src/pages/hakkimda.astro</code> dosyasını aç. Adın,
+				profil fotoğrafın ve bağlantıların <code>src/site.config.ts</code> dosyasından yönetilir.
+			</p>
+		</div>
+
+		{
+			links.length > 0 && (
+				<section class="about__links">
+					<div class="section-head">
+						<h2>İletişim</h2>
+					</div>
+
+					<dl class="contact">
+						{links.map((link) => (
+							<div class="contact__row">
+								<dt>{link.label}</dt>
+								<dd>
+									<a class="text-link" href={link.href}>
+										{link.value}
+									</a>
+								</dd>
+							</div>
+						))}
+					</dl>
+				</section>
+			)
+		}
+	</div>
+</BaseLayout>
+
+<style>
+	.about {
+		max-width: calc(var(--measure) + 2 * var(--gutter));
+		padding-block: clamp(2.5rem, 6vw, 4.5rem) 0;
+	}
+
+	.about__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1.75rem 2.25rem;
+		padding-block-end: 2.5rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	/* Sabit oran verildiği için fotoğraf yüklenirken sayfa kaymaz. */
+	.about__photo {
+		width: 8rem;
+		height: 8rem;
+		object-fit: cover;
+		border: 1px solid var(--rule-strong);
+		background-color: var(--bg-subtle);
+		flex: none;
+	}
+
+	.about__bio {
+		margin-block-start: 2.5rem;
+	}
+
+	.about__links {
+		margin-block-start: 4rem;
+	}
+
+	.contact {
+		margin: 0;
+	}
+
+	.contact__row {
+		display: grid;
+		grid-template-columns: 8rem 1fr;
+		gap: 0.5rem 1.5rem;
+		padding-block: 0.8rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.contact dt {
+		font-family: var(--font-sans);
+		font-size: var(--step--1);
+		color: var(--text-muted);
+	}
+
+	.contact dd {
+		margin: 0;
+		overflow-wrap: anywhere;
+	}
+
+	@media (max-width: 34rem) {
+		.contact__row {
+			grid-template-columns: 1fr;
+			gap: 0.2rem;
+		}
+	}
+</style>

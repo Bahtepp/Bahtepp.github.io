@@ -1,0 +1,173 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+export interface Props {
+	headings: MarkdownHeading[];
+}
+
+/** Yalnızca H2 ve H3 başlıkları içindekiler listesine girer. */
+const flat = Astro.props.headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+type Node = MarkdownHeading & { children: MarkdownHeading[] };
+
+const tree: Node[] = [];
+for (const heading of flat) {
+	if (heading.depth === 2 || tree.length === 0) {
+		tree.push({ ...heading, children: [] });
+	} else {
+		tree[tree.length - 1]!.children.push(heading);
+	}
+}
+---
+
+{
+	flat.length > 1 && (
+		<details class="toc" id="toc" open>
+			<summary class="toc__summary">
+				<span class="eyebrow">İçindekiler</span>
+			</summary>
+
+			<nav aria-label="İçindekiler">
+				<ol class="toc__list">
+					{tree.map((item) => (
+						<li>
+							<a href={`#${item.slug}`} data-toc-link>
+								{item.text}
+							</a>
+							{item.children.length > 0 && (
+								<ol class="toc__list toc__list--nested">
+									{item.children.map((child) => (
+										<li>
+											<a href={`#${child.slug}`} data-toc-link>
+												{child.text}
+											</a>
+										</li>
+									))}
+								</ol>
+							)}
+						</li>
+					))}
+				</ol>
+			</nav>
+		</details>
+	)
+}
+
+<style>
+	.toc {
+		font-family: var(--font-sans);
+		font-size: var(--step--1);
+		border-block-start: 1px solid var(--rule-strong);
+		padding-block-start: 0.75rem;
+	}
+
+	.toc__summary {
+		cursor: pointer;
+		list-style: none;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.toc__summary::-webkit-details-marker {
+		display: none;
+	}
+
+	/* Açılır/kapanır göstergesi yalnızca daraltılmış ekranlarda anlamlı. */
+	.toc__summary::after {
+		content: '+';
+		color: var(--text-faint);
+		font-size: 1rem;
+		line-height: 1;
+	}
+
+	.toc[open] .toc__summary::after {
+		content: '–';
+	}
+
+	.toc__list {
+		list-style: none;
+		padding: 0;
+		margin-block-start: 1rem;
+	}
+
+	.toc__list--nested {
+		padding-inline-start: 1rem;
+		margin-block-start: 0.15rem;
+		border-inline-start: 1px solid var(--rule);
+	}
+
+	.toc__list a {
+		display: block;
+		padding-block: 0.32rem;
+		color: var(--text-muted);
+		text-decoration: none;
+		line-height: 1.4;
+	}
+
+	.toc__list a:hover {
+		color: var(--accent);
+	}
+
+	/* Okurken bulunulan bölüm işaretlenir. */
+	.toc__list a[aria-current='true'] {
+		color: var(--text);
+		font-weight: 600;
+	}
+
+	@media (min-width: 64rem) {
+		.toc__summary {
+			cursor: default;
+		}
+
+		.toc__summary::after {
+			display: none;
+		}
+	}
+</style>
+
+<script>
+	const toc = document.getElementById('toc');
+
+	if (toc instanceof HTMLDetailsElement) {
+		const links = [...toc.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')];
+
+		// Küçük ekranlarda içindekiler kapalı başlar, okuma alanını daraltmaz.
+		if (window.matchMedia('(max-width: 63.99rem)').matches) {
+			toc.open = false;
+		}
+
+		// Okunan bölümü işaretle.
+		const headings = links
+			.map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+			.filter((el): el is HTMLElement => el !== null);
+
+		if (headings.length > 0 && 'IntersectionObserver' in window) {
+			let activeId = headings[0]!.id;
+
+			const setActive = (id: string) => {
+				if (id === activeId) return;
+				activeId = id;
+				for (const link of links) {
+					const isActive = decodeURIComponent(link.hash.slice(1)) === id;
+					link.toggleAttribute('aria-current', isActive);
+					if (isActive) link.setAttribute('aria-current', 'true');
+				}
+			};
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					const visible = entries
+						.filter((entry) => entry.isIntersecting)
+						.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+					if (visible[0]) setActive(visible[0].target.id);
+				},
+				{ rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+			);
+
+			for (const heading of headings) observer.observe(heading);
+		}
+	}
+</script>

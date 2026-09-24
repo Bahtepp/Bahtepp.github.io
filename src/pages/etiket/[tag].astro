@@ -1,0 +1,46 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import PostListItem from '../../components/PostListItem.astro';
+import { getAllTags, getPostsByTag } from '../../lib/content.ts';
+
+export async function getStaticPaths() {
+	const tags = await getAllTags();
+
+	return Promise.all(
+		tags.map(async (tag) => ({
+			params: { tag: tag.slug },
+			props: { tag, posts: await getPostsByTag(tag.slug) },
+		})),
+	);
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<ListingLayout
+	title={tag.label}
+	eyebrow="Etiket"
+	intro={`Bu etiketle işaretlenmiş ${posts.length} içerik.`}
+	description={`${tag.label} etiketli yazılar, araştırmalar ve notlar.`}
+>
+	<ul class="post-list">
+		{
+			posts.map((post) => (
+				<li>
+					<PostListItem post={post} />
+				</li>
+			))
+		}
+	</ul>
+
+	<p class="back">
+		<a class="text-link" href="/etiketler/">Bütün etiketler</a>
+	</p>
+</ListingLayout>
+
+<style>
+	.back {
+		margin-block-start: 2.5rem;
+		font-size: var(--step--1);
+	}
+</style>

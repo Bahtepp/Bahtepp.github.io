@@ -1,0 +1,173 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostListItem from '../components/PostListItem.astro';
+import { siteConfig } from '../site.config.ts';
+import { getAllPosts, getFeaturedPost, getPosts } from '../lib/content.ts';
+import { formatDate, toISODate } from '../lib/format.ts';
+import { formatReadingTime } from '../lib/reading-time.ts';
+
+const featured = await getFeaturedPost();
+const allPosts = await getAllPosts();
+const latest = allPosts.filter((post) => post.id !== featured?.id).slice(0, 6);
+const research = (await getPosts('arastirmalar')).filter((post) => post.id !== featured?.id).slice(0, 3);
+---
+
+<BaseLayout title={siteConfig.siteName}>
+	<section class="hero wrap">
+		<h1 class="hero__title">{siteConfig.siteName}</h1>
+		<p class="hero__tagline">{siteConfig.tagline}</p>
+	</section>
+
+	{
+		featured && (
+			<section class="wrap featured">
+				<div class="section-head">
+					<h2>Öne çıkan</h2>
+				</div>
+
+				<a class="featured__link" href={featured.url}>
+					{featured.data.image && (
+						<img
+							class="cover featured__cover"
+							src={featured.data.image}
+							alt={featured.data.imageAlt ?? ''}
+							loading="eager"
+							decoding="async"
+						/>
+					)}
+
+					<div class="featured__text">
+						<p class="eyebrow">{featured.data.category}</p>
+						<h3 class="featured__title">{featured.data.title}</h3>
+						<p class="featured__desc">{featured.data.description}</p>
+						<div class="meta">
+							<time datetime={toISODate(featured.data.date)}>{formatDate(featured.data.date)}</time>
+							<span>{formatReadingTime(featured.readingTime)}</span>
+						</div>
+					</div>
+				</a>
+			</section>
+		)
+	}
+
+	<section class="wrap block">
+		<div class="section-head">
+			<h2>Son yazılar</h2>
+			<a href="/yazilar/">Bütün yazılar</a>
+		</div>
+
+		{
+			latest.length > 0 ? (
+				<ul class="post-list">
+					{latest.map((post) => (
+						<li>
+							<PostListItem post={post} />
+						</li>
+					))}
+				</ul>
+			) : (
+				<p class="empty">Henüz içerik yok.</p>
+			)
+		}
+	</section>
+
+	{
+		research.length > 0 && (
+			<section class="wrap block">
+				<div class="section-head">
+					<h2>Son araştırmalar</h2>
+					<a href="/arastirmalar/">Bütün araştırmalar</a>
+				</div>
+
+				<ul class="post-list">
+					{research.map((post) => (
+						<li>
+							<PostListItem post={post} showCategory={false} />
+						</li>
+					))}
+				</ul>
+			</section>
+		)
+	}
+</BaseLayout>
+
+<style>
+	.hero {
+		padding-block: clamp(3.5rem, 10vw, 7rem) clamp(2.5rem, 6vw, 4rem);
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.hero__title {
+		font-family: var(--font-serif);
+		font-size: clamp(3rem, 12vw, 7rem);
+		font-weight: 600;
+		line-height: 0.95;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+	}
+
+	.hero__tagline {
+		font-family: var(--font-serif);
+		font-size: var(--step-2);
+		line-height: 1.4;
+		color: var(--text-muted);
+		max-width: 34ch;
+		margin-block-start: 1.25rem;
+	}
+
+	.featured,
+	.block {
+		margin-block-start: clamp(3rem, 7vw, 5rem);
+	}
+
+	.featured__link {
+		display: grid;
+		gap: 1.75rem;
+		text-decoration: none;
+	}
+
+	.featured__cover {
+		aspect-ratio: 3 / 2;
+	}
+
+	.featured__title {
+		font-family: var(--font-serif);
+		font-size: var(--step-3);
+		font-weight: 400;
+		line-height: 1.12;
+		letter-spacing: -0.015em;
+		text-wrap: balance;
+		margin-block-start: 0.6rem;
+	}
+
+	.featured__link:hover .featured__title {
+		color: var(--accent);
+	}
+
+	.featured__desc {
+		font-family: var(--font-serif);
+		font-size: var(--step-1);
+		line-height: 1.55;
+		color: var(--text-muted);
+		max-width: 52ch;
+		margin-block: 0.9rem 1.1rem;
+	}
+
+	.empty {
+		color: var(--text-muted);
+		padding-block: 2rem;
+	}
+
+	@media (min-width: 52rem) {
+		.featured__link {
+			grid-template-columns: 1fr 1fr;
+			gap: 2.75rem;
+			align-items: center;
+		}
+
+		/* Görsel yoksa metin tek kolonda kalsın, yarım boşluk oluşmasın. */
+		.featured__link:not(:has(.featured__cover)) {
+			grid-template-columns: minmax(0, 60ch);
+		}
+	}
+</style>

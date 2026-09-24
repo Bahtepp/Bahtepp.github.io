@@ -1,0 +1,696 @@
+/* ==========================================================================
+   BAHTEP — tasarım sistemi
+   Renkler, tipografi ve ortak bileşen stilleri bu dosyada tanımlanır.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Değişkenler
+   -------------------------------------------------------------------------- */
+
+:root {
+	/* Tipografi: web fontu indirilmez, sistem fontları kullanılır. */
+	--font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia,
+		'Times New Roman', serif;
+	--font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+		sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+		monospace;
+
+	/* Ölçek */
+	--step--1: clamp(0.82rem, 0.8rem + 0.1vw, 0.88rem);
+	--step-0: clamp(1.02rem, 1rem + 0.15vw, 1.12rem);
+	--step-1: clamp(1.18rem, 1.12rem + 0.3vw, 1.35rem);
+	--step-2: clamp(1.4rem, 1.28rem + 0.6vw, 1.75rem);
+	--step-3: clamp(1.7rem, 1.45rem + 1.2vw, 2.4rem);
+	--step-4: clamp(2.05rem, 1.6rem + 2.2vw, 3.3rem);
+
+	/* Ölçüler */
+	--measure: 68ch;
+	--page-max: 74rem;
+	--gutter: clamp(1.25rem, 4vw, 3rem);
+
+	color-scheme: light;
+}
+
+:root,
+[data-theme='light'] {
+	--bg: #fcfbf8;
+	--bg-subtle: #f3f0e9;
+	--text: #1b1a17;
+	--text-muted: #6a6558;
+	--text-faint: #8d887b;
+	--rule: #ddd8cb;
+	--rule-strong: #c4bdab;
+	--accent: #9a2f22;
+	--accent-hover: #7a2119;
+	--accent-subtle: #f6e9e4;
+	--selection: #f0dcd4;
+	--code-bg: #f3f0e9;
+}
+
+[data-theme='dark'] {
+	--bg: #14140f;
+	--bg-subtle: #1e1d18;
+	--text: #ebe8df;
+	--text-muted: #a09a8c;
+	--text-faint: #7d786c;
+	--rule: #302e27;
+	--rule-strong: #4a473d;
+	--accent: #e08a72;
+	--accent-hover: #f0a48e;
+	--accent-subtle: #2a201c;
+	--selection: #3d2c25;
+	--code-bg: #1e1d18;
+
+	color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   2. Temel sıfırlama
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+* {
+	margin: 0;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	scroll-behavior: smooth;
+	scroll-padding-top: 6rem;
+}
+
+body {
+	background-color: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-size: var(--step-0);
+	line-height: 1.6;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	overflow-x: hidden;
+	-webkit-font-smoothing: antialiased;
+}
+
+::selection {
+	background-color: var(--selection);
+}
+
+img,
+svg,
+video {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+a {
+	color: inherit;
+	text-decoration-color: var(--rule-strong);
+	text-underline-offset: 0.18em;
+}
+
+a:hover {
+	text-decoration-color: currentColor;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+
+input {
+	font: inherit;
+	color: inherit;
+}
+
+ul,
+ol {
+	padding-inline-start: 1.2em;
+}
+
+hr {
+	border: none;
+	border-top: 1px solid var(--rule);
+	margin-block: 3rem;
+}
+
+/* Klavye ile gezinenler için her zaman görünür odak halkası. */
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+	border-radius: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/* --------------------------------------------------------------------------
+   3. Yerleşim yardımcıları
+   -------------------------------------------------------------------------- */
+
+.wrap {
+	width: 100%;
+	max-width: var(--page-max);
+	margin-inline: auto;
+	padding-inline: var(--gutter);
+}
+
+.wrap--narrow {
+	max-width: calc(var(--measure) + 2 * var(--gutter));
+}
+
+main {
+	flex: 1 0 auto;
+}
+
+.skip-link {
+	position: absolute;
+	inset-inline-start: 0.5rem;
+	inset-block-start: -4rem;
+	z-index: 100;
+	background-color: var(--bg);
+	color: var(--text);
+	border: 1px solid var(--rule-strong);
+	padding: 0.6rem 1rem;
+	transition: inset-block-start 0.15s ease;
+}
+
+.skip-link:focus {
+	inset-block-start: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   4. Ortak metin bileşenleri
+   -------------------------------------------------------------------------- */
+
+/* Küçük, harf aralıklı, büyük harfli etiket — kategori ve bölüm başlıkları için. */
+.eyebrow {
+	font-family: var(--font-sans);
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+
+.section-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	border-block-start: 1px solid var(--rule-strong);
+	padding-block-start: 0.75rem;
+	margin-block-end: 2rem;
+}
+
+.section-head h2 {
+	font-family: var(--font-sans);
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text);
+}
+
+.section-head a {
+	font-size: var(--step--1);
+	color: var(--text-muted);
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.section-head a:hover {
+	color: var(--accent);
+}
+
+.page-title {
+	font-family: var(--font-serif);
+	font-size: var(--step-4);
+	font-weight: 400;
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+.page-intro {
+	font-family: var(--font-serif);
+	font-size: var(--step-1);
+	line-height: 1.5;
+	color: var(--text-muted);
+	max-width: 48ch;
+	margin-block-start: 1.1rem;
+}
+
+/* Meta satırı: tarih · okuma süresi · kategori */
+.meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+	font-family: var(--font-sans);
+	font-size: var(--step--1);
+	color: var(--text-muted);
+}
+
+.meta > * + *::before {
+	content: '·';
+	margin-inline-end: 0.75rem;
+	color: var(--rule-strong);
+}
+
+.draft-badge {
+	font-family: var(--font-sans);
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--accent);
+	border: 1px solid var(--accent);
+	padding: 0.1rem 0.4rem;
+}
+
+/* Etiketler */
+.tag-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem 0.5rem;
+	list-style: none;
+	padding: 0;
+}
+
+.tag {
+	display: inline-block;
+	font-family: var(--font-sans);
+	font-size: var(--step--1);
+	color: var(--text-muted);
+	text-decoration: none;
+	border: 1px solid var(--rule);
+	padding: 0.15rem 0.55rem;
+}
+
+.tag:hover {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   5. İçerik listeleri
+   -------------------------------------------------------------------------- */
+
+/* Kart yerine ince çizgilerle ayrılmış liste. */
+.post-list {
+	list-style: none;
+	padding: 0;
+	border-block-start: 1px solid var(--rule);
+}
+
+.post-list > li {
+	border-block-end: 1px solid var(--rule);
+}
+
+.post-item {
+	display: block;
+	padding-block: 1.6rem;
+	text-decoration: none;
+}
+
+.post-item__head {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	margin-block-end: 0.35rem;
+}
+
+.post-item__title {
+	font-family: var(--font-serif);
+	font-size: var(--step-2);
+	font-weight: 400;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+}
+
+.post-item:hover .post-item__title {
+	color: var(--accent);
+}
+
+.post-item__desc {
+	font-family: var(--font-serif);
+	color: var(--text-muted);
+	max-width: 60ch;
+	margin-block-end: 0.7rem;
+}
+
+/* Notlar: daha sade, zaman çizelgesi görünümü. */
+.note-list {
+	list-style: none;
+	padding: 0;
+}
+
+.note-list > li {
+	border-block-start: 1px solid var(--rule);
+}
+
+.note-item {
+	display: grid;
+	grid-template-columns: 8.5rem 1fr;
+	gap: 0 1.5rem;
+	padding-block: 1.3rem;
+	text-decoration: none;
+	align-items: baseline;
+}
+
+.note-item__date {
+	font-family: var(--font-sans);
+	font-size: var(--step--1);
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+	padding-block-start: 0.35rem;
+}
+
+.note-item__title {
+	font-family: var(--font-serif);
+	font-size: var(--step-1);
+	font-weight: 400;
+	line-height: 1.3;
+}
+
+.note-item:hover .note-item__title {
+	color: var(--accent);
+}
+
+.note-item__desc {
+	font-family: var(--font-serif);
+	font-size: var(--step-0);
+	color: var(--text-muted);
+	max-width: 60ch;
+	margin-block-start: 0.3rem;
+}
+
+@media (max-width: 34rem) {
+	.note-item {
+		grid-template-columns: 1fr;
+		gap: 0.35rem;
+	}
+
+	.note-item__date {
+		padding-block-start: 0;
+		order: 2;
+	}
+}
+
+/* Kapak görseli: oran sabit olduğu için yükleme sırasında sayfa kaymaz. */
+.cover {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	background-color: var(--bg-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   6. Makale metni (.prose)
+   -------------------------------------------------------------------------- */
+
+.prose {
+	font-family: var(--font-serif);
+	font-size: var(--step-1);
+	line-height: 1.72;
+	max-width: var(--measure);
+	overflow-wrap: break-word;
+}
+
+.prose > * + * {
+	margin-block-start: 1.4em;
+}
+
+.prose h2,
+.prose h3,
+.prose h4 {
+	font-family: var(--font-serif);
+	font-weight: 600;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+	scroll-margin-block-start: 6rem;
+}
+
+.prose h2 {
+	font-size: var(--step-2);
+	margin-block-start: 2.6em;
+	padding-block-end: 0.3em;
+	border-block-end: 1px solid var(--rule);
+}
+
+.prose h3 {
+	font-size: var(--step-1);
+	margin-block-start: 2em;
+}
+
+.prose h4 {
+	font-size: var(--step-0);
+	margin-block-start: 1.8em;
+	font-weight: 700;
+}
+
+.prose a {
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+.prose a:hover {
+	color: var(--accent-hover);
+	text-decoration-color: currentColor;
+}
+
+.prose strong {
+	font-weight: 700;
+}
+
+.prose em {
+	font-style: italic;
+}
+
+.prose blockquote {
+	margin-inline: 0;
+	padding-inline-start: 1.4rem;
+	border-inline-start: 2px solid var(--accent);
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.prose blockquote > * + * {
+	margin-block-start: 1em;
+}
+
+.prose ul,
+.prose ol {
+	padding-inline-start: 1.5em;
+}
+
+.prose li + li {
+	margin-block-start: 0.5em;
+}
+
+.prose li > ul,
+.prose li > ol {
+	margin-block-start: 0.5em;
+}
+
+.prose img {
+	width: 100%;
+	background-color: var(--bg-subtle);
+}
+
+.prose figure {
+	margin-inline: 0;
+}
+
+.prose figcaption,
+.prose img + em {
+	display: block;
+	font-family: var(--font-sans);
+	font-size: var(--step--1);
+	color: var(--text-faint);
+	margin-block-start: 0.6rem;
+}
+
+.prose code {
+	font-family: var(--font-mono);
+	font-size: 0.84em;
+	background-color: var(--code-bg);
+	border: 1px solid var(--rule);
+	padding: 0.1em 0.35em;
+}
+
+.prose pre {
+	font-size: 0.86rem;
+	line-height: 1.6;
+	background-color: var(--code-bg) !important;
+	border: 1px solid var(--rule);
+	padding: 1rem 1.1rem;
+	overflow-x: auto;
+}
+
+.prose pre code {
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: inherit;
+}
+
+/* Tablolar: mobilde taşma yerine yatay kaydırma. */
+.prose .table-scroll {
+	overflow-x: auto;
+	border-block: 1px solid var(--rule-strong);
+}
+
+.prose table {
+	width: 100%;
+	border-collapse: collapse;
+	font-family: var(--font-sans);
+	font-size: var(--step--1);
+}
+
+.prose th,
+.prose td {
+	text-align: start;
+	padding: 0.65rem 0.9rem;
+	border-block-end: 1px solid var(--rule);
+	vertical-align: top;
+}
+
+.prose thead th {
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	font-size: 0.7rem;
+	color: var(--text-muted);
+}
+
+.prose tbody tr:last-child td {
+	border-block-end: none;
+}
+
+/* Dipnot göstergeleri (metin içindeki [1], [2] ...) */
+.prose sup a,
+.prose .data-footnote-backref {
+	text-decoration: none;
+}
+
+.prose sup a {
+	font-family: var(--font-sans);
+	font-size: 0.7em;
+	font-weight: 600;
+	padding-inline: 0.15em;
+}
+
+.prose sup a:hover,
+.prose sup a:focus-visible {
+	background-color: var(--accent-subtle);
+}
+
+/*
+	Kaynakça bölümü.
+	Markdown işlemcisi bu başlığı `sr-only` sınıfıyla üretir (GitHub'ın alışkanlığı).
+	Bu sitede kaynakça görünür olmalı, bu yüzden `sr-only` hiçbir yerde tanımlanmadı.
+*/
+.prose .footnotes {
+	margin-block-start: 3.5rem;
+	font-size: var(--step-0);
+	color: var(--text-muted);
+}
+
+.prose .footnotes h2 {
+	font-family: var(--font-sans);
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text);
+	border-block-end: none;
+	border-block-start: 1px solid var(--rule-strong);
+	padding-block: 0.75rem 0;
+	margin-block-end: 1.25rem;
+}
+
+.prose .footnotes ol {
+	padding-inline-start: 1.4em;
+}
+
+.prose .footnotes li {
+	margin-block-start: 0.7em;
+}
+
+/* Hedeflenen dipnot kısaca vurgulanır. */
+.prose .footnotes li:target {
+	background-color: var(--accent-subtle);
+	box-shadow: 0 0 0 0.4rem var(--accent-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   7. Buton benzeri bağlantılar
+   -------------------------------------------------------------------------- */
+
+.button {
+	display: inline-block;
+	font-family: var(--font-sans);
+	font-size: var(--step--1);
+	font-weight: 500;
+	letter-spacing: 0.02em;
+	text-decoration: none;
+	color: var(--text);
+	border: 1px solid var(--rule-strong);
+	padding: 0.6rem 1.2rem;
+	transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.button:hover {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.text-link {
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent);
+	text-underline-offset: 0.2em;
+}
+
+.text-link:hover {
+	text-decoration-color: currentColor;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}

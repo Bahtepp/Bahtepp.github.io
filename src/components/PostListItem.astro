@@ -1,0 +1,36 @@
+---
+import type { Post } from '../lib/content.ts';
+import { formatDate, toISODate } from '../lib/format.ts';
+import { formatReadingTime } from '../lib/reading-time.ts';
+
+export interface Props {
+	post: Post;
+	/** Karışık listelerde kategori göstermek için. Tek türlü listelerde kapatılabilir. */
+	showCategory?: boolean;
+}
+
+const { post, showCategory = true } = Astro.props;
+const { data } = post;
+---
+
+<a class="post-item" href={post.url}>
+	<div class="post-item__head">
+		{showCategory && <span class="eyebrow">{data.category}</span>}
+		{data.draft && <span class="draft-badge">Taslak</span>}
+	</div>
+
+	<h3 class="post-item__title">{data.title}</h3>
+	<p class="post-item__desc">{data.description}</p>
+
+	<div class="meta">
+		<time datetime={toISODate(data.date)}>{formatDate(data.date)}</time>
+		<span>{formatReadingTime(post.readingTime)}</span>
+		{
+			data.updatedDate && (
+				<span>
+					Güncellendi: <time datetime={toISODate(data.updatedDate)}>{formatDate(data.updatedDate)}</time>
+				</span>
+			)
+		}
+	</div>
+</a>

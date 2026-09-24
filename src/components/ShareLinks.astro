@@ -1,0 +1,75 @@
+---
+export interface Props {
+	title: string;
+	url: string;
+}
+
+const { title, url } = Astro.props;
+
+const targets = [
+	{ label: 'X', href: `https://x.com/intent/post?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` },
+	{ label: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}` },
+	{ label: 'E-posta', href: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}` },
+];
+---
+
+<div class="share">
+	<span class="eyebrow">Paylaş</span>
+	<div class="share__links">
+		{
+			targets.map((target) => (
+				<a class="share__link" href={target.href} rel="noopener noreferrer" target="_blank">
+					{target.label}
+				</a>
+			))
+		}
+		<button type="button" class="share__link" data-copy-url={url}>Bağlantıyı kopyala</button>
+	</div>
+</div>
+
+<style>
+	.share {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.9rem;
+	}
+
+	.share__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+	}
+
+	.share__link {
+		font-family: var(--font-sans);
+		font-size: var(--step--1);
+		color: var(--text-muted);
+		text-decoration: none;
+		padding: 0;
+	}
+
+	.share__link:hover {
+		color: var(--accent);
+	}
+</style>
+
+<script>
+	const button = document.querySelector<HTMLButtonElement>('[data-copy-url]');
+
+	button?.addEventListener('click', async () => {
+		const url = button.dataset.copyUrl;
+		if (!url) return;
+
+		try {
+			await navigator.clipboard.writeText(url);
+			const original = button.textContent;
+			button.textContent = 'Kopyalandı';
+			setTimeout(() => {
+				button.textContent = original;
+			}, 1800);
+		} catch {
+			// Pano izni yoksa bir şey yapma; diğer paylaşım bağlantıları çalışmaya devam eder.
+		}
+	});
+</script>

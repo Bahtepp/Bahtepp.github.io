@@ -1,0 +1,71 @@
+---
+import ListingLayout from '../layouts/ListingLayout.astro';
+import { getAllTags } from '../lib/content.ts';
+
+const tags = await getAllTags();
+---
+
+<ListingLayout
+	title="Etiketler"
+	intro="Sitedeki bütün konu etiketleri. Bir etikete tıklayarak o konudaki içerikleri görebilirsin."
+>
+	{
+		tags.length > 0 ? (
+			<ul class="tag-index">
+				{tags.map((tag) => (
+					<li>
+						<a class="tag-index__link" href={`/etiket/${tag.slug}/`}>
+							<span class="tag-index__label">{tag.label}</span>
+							<span class="tag-index__count">{tag.count}</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		) : (
+			<p class="page-intro">Henüz etiket yok.</p>
+		)
+	}
+</ListingLayout>
+
+<style>
+	.tag-index {
+		list-style: none;
+		padding: 0;
+		border-block-start: 1px solid var(--rule);
+		columns: 2;
+		column-gap: 3rem;
+	}
+
+	.tag-index > li {
+		break-inside: avoid;
+	}
+
+	.tag-index__link {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 0.7rem;
+		border-block-end: 1px solid var(--rule);
+		text-decoration: none;
+		font-family: var(--font-serif);
+		font-size: var(--step-1);
+	}
+
+	.tag-index__link:hover .tag-index__label {
+		color: var(--accent);
+	}
+
+	.tag-index__count {
+		font-family: var(--font-sans);
+		font-size: var(--step--1);
+		color: var(--text-faint);
+		font-variant-numeric: tabular-nums;
+	}
+
+	@media (max-width: 40rem) {
+		.tag-index {
+			columns: 1;
+		}
+	}
+</style>

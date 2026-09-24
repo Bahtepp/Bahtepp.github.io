@@ -1,0 +1,43 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import { collectionMeta, getPosts } from '../../lib/content.ts';
+import { formatDateShort, toISODate } from '../../lib/format.ts';
+
+const meta = collectionMeta.notlar;
+const posts = await getPosts('notlar');
+---
+
+<ListingLayout title={meta.label} intro={meta.description}>
+	{
+		posts.length > 0 ? (
+			<ul class="note-list">
+				{posts.map((post) => (
+					<li>
+						<a class="note-item" href={post.url}>
+							<time class="note-item__date" datetime={toISODate(post.data.date)}>
+								{formatDateShort(post.data.date)}
+							</time>
+
+							<div>
+								<h2 class="note-item__title">
+									{post.data.title}
+									{post.data.draft && <span class="draft-badge note-item__draft">Taslak</span>}
+								</h2>
+								<p class="note-item__desc">{post.data.description}</p>
+							</div>
+						</a>
+					</li>
+				))}
+			</ul>
+		) : (
+			<p class="page-intro">Henüz not yok.</p>
+		)
+	}
+</ListingLayout>
+
+<style>
+	.note-item__draft {
+		margin-inline-start: 0.6rem;
+		vertical-align: middle;
+	}
+</style>

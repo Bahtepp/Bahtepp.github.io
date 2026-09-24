@@ -1,0 +1,24 @@
+---
+import { render } from 'astro:content';
+
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getNeighbours, getPosts } from '../../lib/content.ts';
+
+export async function getStaticPaths() {
+	const posts = await getPosts('notlar');
+
+	return posts.map((post) => ({
+		params: { id: post.id },
+		props: { post, siblings: posts },
+	}));
+}
+
+const { post, siblings } = Astro.props;
+const { Content, headings } = await render(post.entry);
+const { prev, next } = getNeighbours(siblings, post.id);
+---
+
+<!-- Notlar kısa olduğu için içindekiler bölümü gösterilmez. -->
+<ArticleLayout post={post} headings={headings} prev={prev} next={next} withToc={false}>
+	<Content />
+</ArticleLayout>

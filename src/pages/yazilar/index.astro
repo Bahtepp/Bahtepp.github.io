@@ -1,0 +1,24 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import PostListItem from '../../components/PostListItem.astro';
+import { collectionMeta, getPosts } from '../../lib/content.ts';
+
+const meta = collectionMeta.yazilar;
+const posts = await getPosts('yazilar');
+---
+
+<ListingLayout title={meta.label} intro={meta.description}>
+	{
+		posts.length > 0 ? (
+			<ul class="post-list">
+				{posts.map((post) => (
+					<li>
+						<PostListItem post={post} showCategory={false} />
+					</li>
+				))}
+			</ul>
+		) : (
+			<p class="page-intro">Henüz yazı yok.</p>
+		)
+	}
+</ListingLayout>

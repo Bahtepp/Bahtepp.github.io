@@ -1,0 +1,23 @@
+---
+import { render } from 'astro:content';
+
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getNeighbours, getPosts } from '../../lib/content.ts';
+
+export async function getStaticPaths() {
+	const posts = await getPosts('arastirmalar');
+
+	return posts.map((post) => ({
+		params: { id: post.id },
+		props: { post, siblings: posts },
+	}));
+}
+
+const { post, siblings } = Astro.props;
+const { Content, headings } = await render(post.entry);
+const { prev, next } = getNeighbours(siblings, post.id);
+---
+
+<ArticleLayout post={post} headings={headings} prev={prev} next={next}>
+	<Content />
+</ArticleLayout>

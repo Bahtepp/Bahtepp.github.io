@@ -1,0 +1,203 @@
+---
+import ListingLayout from '../layouts/ListingLayout.astro';
+---
+
+<ListingLayout
+	title="Arama"
+	intro="Başlık, açıklama, kategori, etiket ve yazı metni içinde ara."
+	noindex={true}
+>
+	<form class="search" role="search" id="search-form">
+		<label class="visually-hidden" for="search-input">Arama terimi</label>
+		<input
+			class="search__input"
+			type="search"
+			id="search-input"
+			name="q"
+			placeholder="Örneğin: yapay zekâ"
+			autocomplete="off"
+			autocapitalize="off"
+			spellcheck="false"
+		/>
+	</form>
+
+	<p class="search__status" id="search-status" role="status" aria-live="polite"></p>
+
+	<ul class="post-list search__results" id="search-results" hidden></ul>
+</ListingLayout>
+
+<style>
+	.search {
+		max-width: var(--measure);
+	}
+
+	.search__input {
+		width: 100%;
+		background-color: transparent;
+		border: none;
+		border-block-end: 1px solid var(--rule-strong);
+		font-family: var(--font-serif);
+		font-size: var(--step-2);
+		padding-block: 0.6rem;
+	}
+
+	.search__input::placeholder {
+		color: var(--text-faint);
+	}
+
+	.search__input:focus {
+		outline: none;
+		border-block-end-color: var(--accent);
+	}
+
+	.search__input:focus-visible {
+		outline: none;
+	}
+
+	.search__status {
+		font-family: var(--font-sans);
+		font-size: var(--step--1);
+		color: var(--text-muted);
+		margin-block: 1.5rem;
+		min-height: 1.5em;
+	}
+
+	.search__results {
+		margin-block-start: 1rem;
+	}
+
+	/* Pagefind, eşleşen kelimeleri <mark> ile işaretler. */
+	.search__results :global(mark) {
+		background-color: var(--accent-subtle);
+		color: inherit;
+		font-style: normal;
+	}
+</style>
+
+<script>
+	interface PagefindResultData {
+		url: string;
+		meta?: Record<string, string>;
+		excerpt?: string;
+	}
+
+	interface PagefindResult {
+		data(): Promise<PagefindResultData>;
+	}
+
+	interface PagefindApi {
+		init?: () => Promise<void>;
+		debouncedSearch(
+			term: string,
+			options?: unknown,
+			debounceMs?: number,
+		): Promise<{ results: PagefindResult[] } | null>;
+	}
+
+	const form = document.getElementById('search-form') as HTMLFormElement | null;
+	const input = document.getElementById('search-input') as HTMLInputElement | null;
+	const status = document.getElementById('search-status');
+	const list = document.getElementById('search-results');
+
+	if (form && input && status && list) {
+		form.addEventListener('submit', (event) => event.preventDefault());
+
+		let api: PagefindApi | null | undefined;
+
+		/**
+		 * Arama dizini `npm run build` sırasında Pagefind tarafından üretilir.
+		 * Bu yüzden `npm run dev` sırasında dosya bulunmaz ve kullanıcıya bilgi verilir.
+		 */
+		async function loadPagefind(): Promise<PagefindApi | null> {
+			if (api !== undefined) return api;
+
+			try {
+				// Değişken üzerinden import edilir, böylece build sırasında çözümlenmeye çalışılmaz.
+				const path = '/pagefind/pagefind.js';
+				const module = (await import(/* @vite-ignore */ path)) as PagefindApi;
+				await module.init?.();
+				api = module;
+			} catch {
+				api = null;
+			}
+
+			return api;
+		}
+
+		function escapeHtml(value: string): string {
+			return value.replace(/[&<>"]/g, (ch) => {
+				const map: Record<string, string> = {
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+				};
+				return map[ch] ?? ch;
+			});
+		}
+
+		function render(items: PagefindResultData[]): void {
+			list!.innerHTML = items
+				.map((item) => {
+					const title = escapeHtml(item.meta?.title ?? 'Başlıksız');
+					const category = item.meta?.kategori ? escapeHtml(item.meta.kategori) : '';
+
+					return `<li>
+							<a class="post-item" href="${escapeHtml(item.url)}">
+								${category ? `<div class="post-item__head"><span class="eyebrow">${category}</span></div>` : ''}
+								<h2 class="post-item__title">${title}</h2>
+								<p class="post-item__desc">${item.excerpt ?? ''}</p>
+							</a>
+						</li>`;
+				})
+				.join('');
+
+			list!.hidden = items.length === 0;
+		}
+
+		async function runSearch(term: string): Promise<void> {
+			const query = term.trim();
+
+			if (query.length < 2) {
+				render([]);
+				status!.textContent = query.length === 0 ? '' : 'En az iki harf yaz.';
+				return;
+			}
+
+			const pagefind = await loadPagefind();
+
+			if (!pagefind) {
+				status!.textContent =
+					'Arama dizini bulunamadı. Arama, yayınlanmış sitede çalışır; yerelde denemek için "npm run build" ve ardından "npm run preview" komutlarını kullan.';
+				return;
+			}
+
+			status!.textContent = 'Aranıyor…';
+			const search = await pagefind.debouncedSearch(query);
+
+			// Daha yeni bir arama başladıysa bu sonuç geçersizdir.
+			if (search === null) return;
+
+			const items = await Promise.all(search.results.slice(0, 30).map((result) => result.data()));
+			render(items);
+
+			status!.textContent =
+				items.length === 0
+					? `"${query}" için sonuç bulunamadı.`
+					: `${items.length} sonuç bulundu.`;
+		}
+
+		input.addEventListener('input', () => {
+			void runSearch(input.value);
+		});
+
+		// /arama/?q=... biçimindeki adresler doğrudan aramayı başlatır.
+		const initial = new URLSearchParams(window.location.search).get('q');
+		if (initial) {
+			input.value = initial;
+			void runSearch(initial);
+		}
+
+		input.focus();
+	}
+</script>

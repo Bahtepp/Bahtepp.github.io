@@ -1,0 +1,70 @@
+---
+import ListingLayout from '../../layouts/ListingLayout.astro';
+import Tags from '../../components/Tags.astro';
+import { collectionMeta, getPosts } from '../../lib/content.ts';
+import { formatDate, toISODate } from '../../lib/format.ts';
+import { formatReadingTime } from '../../lib/reading-time.ts';
+
+const meta = collectionMeta.arastirmalar;
+const posts = await getPosts('arastirmalar');
+---
+
+<ListingLayout title={meta.label} intro={meta.description}>
+	{
+		posts.length > 0 ? (
+			<ul class="post-list">
+				{posts.map((post) => (
+					<li>
+						<article class="research">
+							<a class="research__link" href={post.url}>
+								{post.data.draft && <span class="draft-badge">Taslak</span>}
+								<h2 class="post-item__title">{post.data.title}</h2>
+								<p class="post-item__desc">{post.data.description}</p>
+							</a>
+
+							<div class="meta">
+								<time datetime={toISODate(post.data.date)}>{formatDate(post.data.date)}</time>
+								{post.data.updatedDate && (
+									<span>
+										Güncellendi:{' '}
+										<time datetime={toISODate(post.data.updatedDate)}>
+											{formatDate(post.data.updatedDate)}
+										</time>
+									</span>
+								)}
+								<span>{formatReadingTime(post.readingTime)}</span>
+							</div>
+
+							{post.data.tags.length > 0 && (
+								<div class="research__tags">
+									<Tags tags={post.data.tags} />
+								</div>
+							)}
+						</article>
+					</li>
+				))}
+			</ul>
+		) : (
+			<p class="page-intro">Henüz araştırma yok.</p>
+		)
+	}
+</ListingLayout>
+
+<style>
+	.research {
+		padding-block: 1.8rem;
+	}
+
+	.research__link {
+		display: block;
+		text-decoration: none;
+	}
+
+	.research__link:hover .post-item__title {
+		color: var(--accent);
+	}
+
+	.research__tags {
+		margin-block-start: 1rem;
+	}
+</style>

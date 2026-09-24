@@ -1,0 +1,36 @@
+---
+import { slugifyTag } from '../lib/format.ts';
+
+export interface Props {
+	tags: readonly string[];
+	label?: string;
+}
+
+const { tags, label } = Astro.props;
+---
+
+{
+	tags.length > 0 && (
+		<div class="tags">
+			{label && <span class="eyebrow">{label}</span>}
+			<ul class="tag-list">
+				{tags.map((tag) => (
+					<li>
+						<a class="tag" href={`/etiket/${slugifyTag(tag)}/`}>
+							{tag}
+						</a>
+					</li>
+				))}
+			</ul>
+		</div>
+	)
+}
+
+<style>
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.9rem;
+	}
+</style>

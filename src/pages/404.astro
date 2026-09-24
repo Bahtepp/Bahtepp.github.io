@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Sayfa bulunamadı" description="Aradığın sayfa bulunamadı." noindex={true}>
+	<div class="wrap notfound">
+		<p class="notfound__code" aria-hidden="true">404</p>
+		<h1 class="page-title">Aradığın sayfa bulunamadı.</h1>
+		<p class="page-intro">
+			Bağlantı değişmiş, taşınmış veya hiç var olmamış olabilir. Aşağıdan devam edebilirsin.
+		</p>
+
+		<nav class="notfound__links" aria-label="Öneriler">
+			<a class="button" href="/">Ana sayfa</a>
+			<a class="button" href="/yazilar/">Yazılar</a>
+			<a class="button" href="/arastirmalar/">Araştırmalar</a>
+			<a class="button" href="/arama/">Arama</a>
+		</nav>
+	</div>
+</BaseLayout>
+
+<style>
+	.notfound {
+		max-width: calc(var(--measure) + 2 * var(--gutter));
+		padding-block: clamp(3rem, 10vw, 7rem) 0;
+	}
+
+	.notfound__code {
+		font-family: var(--font-serif);
+		font-size: clamp(4rem, 14vw, 8rem);
+		line-height: 1;
+		color: var(--rule-strong);
+		margin-block-end: 1rem;
+	}
+
+	.notfound__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-block-start: 2.5rem;
+	}
+</style>

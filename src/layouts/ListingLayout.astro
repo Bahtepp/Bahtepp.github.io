@@ -1,0 +1,41 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+export interface Props {
+	title: string;
+	intro?: string;
+	description?: string;
+	/** Başlığın üstünde görünen küçük etiket. */
+	eyebrow?: string;
+	noindex?: boolean;
+}
+
+const { title, intro, description, eyebrow, noindex } = Astro.props;
+---
+
+<BaseLayout title={title} description={description ?? intro} noindex={noindex}>
+	<div class="wrap listing">
+		<header class="listing__header">
+			{eyebrow && <p class="eyebrow">{eyebrow}</p>}
+			<h1 class="page-title">{title}</h1>
+			{intro && <p class="page-intro">{intro}</p>}
+		</header>
+
+		<slot />
+	</div>
+</BaseLayout>
+
+<style>
+	.listing {
+		padding-block: clamp(2.5rem, 6vw, 4.5rem) 0;
+	}
+
+	.listing__header {
+		margin-block-end: clamp(2.5rem, 6vw, 4rem);
+	}
+
+	.listing__header .eyebrow {
+		display: block;
+		margin-block-end: 1rem;
+	}
+</style>

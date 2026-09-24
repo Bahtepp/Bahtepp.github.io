@@ -1,0 +1,13 @@
+# Metin dosyaları depoda her zaman LF satır sonuyla saklanır.
+# Windows'ta düzenlenip Linux'ta derlenen bir proje olduğu için bu önemlidir.
+* text=auto eol=lf
+
+# İkili dosyalara dokunulmaz.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img" aria-label="Ornek kapak gorseli">
+	<rect width="1200" height="800" fill="#f3f0e9"/>
+	<g stroke="#c4bdab" stroke-width="1.25" fill="none">
+		<path d="M0 120h1200M0 200h1200M0 280h1200M0 360h1200M0 440h1200M0 520h1200M0 600h1200M0 680h1200"/>
+	</g>
+	<g stroke="#9a2f22" stroke-width="1.75" fill="none">
+		<path d="M140 660C340 660 340 140 540 140s200 520 400 520"/>
+	</g>
+	<circle cx="540" cy="140" r="7" fill="#9a2f22"/>
+	<text x="140" y="740" font-family="Georgia, serif" font-size="26" letter-spacing="6" fill="#8d887b">ÖRNEK KAPAK GÖRSEL0</text>
+</svg>
