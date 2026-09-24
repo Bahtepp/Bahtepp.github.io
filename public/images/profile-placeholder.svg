@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320" role="img" aria-label="Profil fotografi yer tutucusu">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
 	<rect width="320" height="320" fill="#f3f0e9"/>
 	<g fill="none" stroke="#c4bdab" stroke-width="2">
-		<circle cx="160" cy="132" r="42"/>
-		<path d="M74 268c0-47 38-85 86-85s86 38 86 85"/>
+		<circle cx="160" cy="140" r="44"/>
+		<path d="M70 278c0-50 40-90 90-90s90 40 90 90"/>
 	</g>
-	<text x="160" y="300" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#8d887b">profil fotoraf1</text>
 </svg>

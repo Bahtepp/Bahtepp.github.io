@@ -50,7 +50,8 @@ const section = collectionMeta[post.collection];
 				<h1 class="page-title">{data.title}</h1>
 				<p class="article__lede">{data.description}</p>
 
-				<div class="meta article__meta">
+				<!-- Tarih ve okuma süresi arama sonuçlarındaki özete karışmasın. -->
+				<div class="meta article__meta" data-pagefind-ignore>
 					<time datetime={toISODate(data.date)}>{formatDate(data.date)}</time>
 					{
 						data.updatedDate && (
@@ -96,14 +97,18 @@ const section = collectionMeta[post.collection];
 					<slot />
 				</div>
 
-				<footer class="article__footer">
+				<!--
+					Etiketler yazı başlığının altında zaten dizine giriyor; buradaki tekrar ile
+					paylaşım bağlantılarının arama sonuçlarına karışmasına gerek yok.
+				-->
+				<footer class="article__footer" data-pagefind-ignore>
 					{data.tags.length > 0 && <Tags tags={data.tags} label="Etiketler" />}
 					<ShareLinks title={data.title} url={canonicalUrl} />
 				</footer>
 
 				{
 					(prev || next) && (
-						<nav class="pager" aria-label="Diğer yazılar">
+						<nav class="pager" aria-label="Diğer yazılar" data-pagefind-ignore>
 							<div class="pager__cell">
 								{prev && (
 									<a class="pager__link" href={prev.url} rel="prev">

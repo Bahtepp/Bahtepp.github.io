@@ -74,48 +74,32 @@ import ListingLayout from '../layouts/ListingLayout.astro';
 	}
 </style>
 
-<script>
-	interface PagefindResultData {
-		url: string;
-		meta?: Record<string, string>;
-		excerpt?: string;
-	}
-
-	interface PagefindResult {
-		data(): Promise<PagefindResultData>;
-	}
-
-	interface PagefindApi {
-		init?: () => Promise<void>;
-		debouncedSearch(
-			term: string,
-			options?: unknown,
-			debounceMs?: number,
-		): Promise<{ results: PagefindResult[] } | null>;
-	}
-
-	const form = document.getElementById('search-form') as HTMLFormElement | null;
-	const input = document.getElementById('search-input') as HTMLInputElement | null;
+<!--
+	`is:inline` bilinçli bir tercih: Pagefind dosyası build çıktısında oluştuğu için
+	paketleyicinin bu import'u çözümlemeye çalışmaması gerekir. Bu yüzden script
+	olduğu gibi, sade JavaScript olarak sayfaya gömülür.
+-->
+<script is:inline type="module">
+	const form = document.getElementById('search-form');
+	const input = document.getElementById('search-input');
 	const status = document.getElementById('search-status');
 	const list = document.getElementById('search-results');
 
 	if (form && input && status && list) {
 		form.addEventListener('submit', (event) => event.preventDefault());
 
-		let api: PagefindApi | null | undefined;
+		let api;
 
 		/**
 		 * Arama dizini `npm run build` sırasında Pagefind tarafından üretilir.
 		 * Bu yüzden `npm run dev` sırasında dosya bulunmaz ve kullanıcıya bilgi verilir.
 		 */
-		async function loadPagefind(): Promise<PagefindApi | null> {
+		async function loadPagefind() {
 			if (api !== undefined) return api;
 
 			try {
-				// Değişken üzerinden import edilir, böylece build sırasında çözümlenmeye çalışılmaz.
-				const path = '/pagefind/pagefind.js';
-				const module = (await import(/* @vite-ignore */ path)) as PagefindApi;
-				await module.init?.();
+				const module = await import('/pagefind/pagefind.js');
+				if (module.init) await module.init();
 				api = module;
 			} catch {
 				api = null;
@@ -124,55 +108,46 @@ import ListingLayout from '../layouts/ListingLayout.astro';
 			return api;
 		}
 
-		function escapeHtml(value: string): string {
-			return value.replace(/[&<>"]/g, (ch) => {
-				const map: Record<string, string> = {
-					'&': '&amp;',
-					'<': '&lt;',
-					'>': '&gt;',
-					'"': '&quot;',
-				};
-				return map[ch] ?? ch;
-			});
-		}
+		const escapeHtml = (value) =>
+			String(value).replace(
+				/[&<>"]/g,
+				(ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch],
+			);
 
-		function render(items: PagefindResultData[]): void {
-			list!.innerHTML = items
+		function render(items) {
+			list.innerHTML = items
 				.map((item) => {
 					const title = escapeHtml(item.meta?.title ?? 'Başlıksız');
 					const category = item.meta?.kategori ? escapeHtml(item.meta.kategori) : '';
+					const head = category
+						? `<div class="post-item__head"><span class="eyebrow">${category}</span></div>`
+						: '';
 
-					return `<li>
-							<a class="post-item" href="${escapeHtml(item.url)}">
-								${category ? `<div class="post-item__head"><span class="eyebrow">${category}</span></div>` : ''}
-								<h2 class="post-item__title">${title}</h2>
-								<p class="post-item__desc">${item.excerpt ?? ''}</p>
-							</a>
-						</li>`;
+					return `<li><a class="post-item" href="${escapeHtml(item.url)}">${head}<h2 class="post-item__title">${title}</h2><p class="post-item__desc">${item.excerpt ?? ''}</p></a></li>`;
 				})
 				.join('');
 
-			list!.hidden = items.length === 0;
+			list.hidden = items.length === 0;
 		}
 
-		async function runSearch(term: string): Promise<void> {
+		async function runSearch(term) {
 			const query = term.trim();
 
 			if (query.length < 2) {
 				render([]);
-				status!.textContent = query.length === 0 ? '' : 'En az iki harf yaz.';
+				status.textContent = query.length === 0 ? '' : 'En az iki harf yaz.';
 				return;
 			}
 
 			const pagefind = await loadPagefind();
 
 			if (!pagefind) {
-				status!.textContent =
+				status.textContent =
 					'Arama dizini bulunamadı. Arama, yayınlanmış sitede çalışır; yerelde denemek için "npm run build" ve ardından "npm run preview" komutlarını kullan.';
 				return;
 			}
 
-			status!.textContent = 'Aranıyor…';
+			status.textContent = 'Aranıyor…';
 			const search = await pagefind.debouncedSearch(query);
 
 			// Daha yeni bir arama başladıysa bu sonuç geçersizdir.
@@ -181,21 +156,19 @@ import ListingLayout from '../layouts/ListingLayout.astro';
 			const items = await Promise.all(search.results.slice(0, 30).map((result) => result.data()));
 			render(items);
 
-			status!.textContent =
-				items.length === 0
-					? `"${query}" için sonuç bulunamadı.`
-					: `${items.length} sonuç bulundu.`;
+			status.textContent =
+				items.length === 0 ? `"${query}" için sonuç bulunamadı.` : `${items.length} sonuç bulundu.`;
 		}
 
 		input.addEventListener('input', () => {
-			void runSearch(input.value);
+			runSearch(input.value);
 		});
 
 		// /arama/?q=... biçimindeki adresler doğrudan aramayı başlatır.
 		const initial = new URLSearchParams(window.location.search).get('q');
 		if (initial) {
 			input.value = initial;
-			void runSearch(initial);
+			runSearch(initial);
 		}
 
 		input.focus();
