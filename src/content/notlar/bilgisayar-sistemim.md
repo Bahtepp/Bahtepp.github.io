@@ -5,7 +5,7 @@ date: 2026-09-24
 category: "Not"
 tags:
   - bilgisayar
-draft: true
+draft: false
 featured: false
 ---
 
