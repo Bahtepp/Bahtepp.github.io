@@ -11,7 +11,7 @@ tags:
   - mini
   - kgm
   - suv
-draft: true
+draft: false
 featured: false
 image: "/images/tablo.png"
 ---
