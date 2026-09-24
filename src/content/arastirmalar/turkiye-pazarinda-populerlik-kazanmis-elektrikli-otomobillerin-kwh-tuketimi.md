@@ -13,7 +13,7 @@ tags:
   - suv
 draft: false
 featured: false
-image: "/images/tablo.png"
+image: "/images/elektrikli-arac-1.webp"
 ---
 
 ## Menzil Büyüdü, Tüketim Görünmez Oldu: Elektrikli Otomobillerde Asıl Bakmamız Gereken Rakam
@@ -33,8 +33,8 @@ Elektrikli otomobillerde de temel mantık bundan farklı değil. Daha büyük bi
 Benzinli ve dizel otomobillerde yıllardır “100 kilometrede kaç litre yakıyor?” diye soruyoruz. Elektrikli otomobilde bunun karşılığı:
 
 “100 kilometrede kaç kWh elektrik harcıyor?”
-
 sorusudur.
+
 
 Bu fark artık yalnızca teknik bir detay da değil. Türkiye'deki halka açık şarj istasyonlarında AC fiyatların ortancası yaklaşık 9,95 TL/kWh, DC hızlı şarj fiyatlarının ortancası ise 13,99 TL/kWh seviyesinde. DC tarifeleri operatöre göre yaklaşık 7,70 TL ile 16,49 TL/kWh arasında değişebiliyor.[^sarjradar]
 
@@ -44,13 +44,7 @@ Aynı Elektrik, Çok Farklı Tüketim
 
 Türkiye pazarında bilinen üç elektrikli SUV'un yüksek tüketimli versiyonlarını, verimlilik tarafında referans olması amacıyla Tesla Model Y RWD ile karşılaştırdığımızda fark daha net ortaya çıkıyor.
 
-
-| Araç | WLTP karma tüketim | Batarya | 100 km DC maliyeti* | Yaklaşık km maliyeti |
-| --- | ---: | ---: | ---: | ---: |
-| Togg T10X AWD | 21,9 kWh/100 km | 88,5 kWh | 306 TL | 3,06 TL/km |
-| KGM Torres EVX | 19,8 kWh/100 km | 80,6 kWh | 277 TL | 2,77 TL/km |
-| MINI Countryman SE ALL4 | 16,8–18,5 kWh/100 km | 66,5 kWh brüt | 235–259 TL | 2,35–2,59 TL/km |
-| Tesla Model Y RWD – referans | 13,1 kWh/100 km | — | 183 TL | 1,83 TL/km |
+![](/images/tablo.png)
 
 * Hesaplamada Türkiye genelindeki 13,99 TL/kWh DC ortanca fiyatı kullanılmıştır.[^sarjradar]
 
