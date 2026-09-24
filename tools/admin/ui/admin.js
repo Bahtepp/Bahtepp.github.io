@@ -1219,10 +1219,12 @@ function bindGit() {
 
 function emptyAbout() {
 	return {
+		loaded: false,
 		author: '',
 		authorBio: '',
 		profileImage: '',
-		links: { email: '', github: '', x: '', linkedin: '' },
+		links: [],
+		linkSeq: 0,
 		body: '',
 		imageUpload: null,
 		imagePreview: '',
@@ -1230,19 +1232,23 @@ function emptyAbout() {
 	};
 }
 
+function collectAboutLinks() {
+	return (state.about?.links ?? []).map((link) => ({
+		label: String(link.label ?? '').trim(),
+		url: String(link.url ?? '').trim(),
+	}));
+}
+
 function aboutSnapshot() {
 	const about = state.about;
 	if (!about) return '';
 	return JSON.stringify({
-		author: $('#f-about-author').value,
-		authorBio: $('#f-about-bio').value,
+		author: $('#f-about-author')?.value ?? '',
+		authorBio: $('#f-about-bio')?.value ?? '',
 		profileImage: about.profileImage,
 		imageUpload: about.imageUpload?.name ?? '',
-		email: $('#f-about-email').value,
-		github: $('#f-about-github').value,
-		x: $('#f-about-x').value,
-		linkedin: $('#f-about-linkedin').value,
-		body: state.aboutCm ? state.aboutCm.getValue() : $('#f-about-body').value,
+		links: collectAboutLinks(),
+		body: state.aboutCm ? state.aboutCm.getValue() : $('#f-about-body')?.value ?? '',
 	});
 }
 
@@ -1276,11 +1282,54 @@ function bindUnsavedGuard() {
 	});
 }
 
+function setAboutLoaded(loaded) {
+	if (state.about) state.about.loaded = loaded;
+	$('#about-form').hidden = !loaded;
+	$('#btn-about-save').disabled = !loaded;
+}
+
 function bindAbout() {
 	ensureAboutEditor();
 
 	$('#btn-about-save').addEventListener('click', () => saveAbout());
 	$('#btn-about-site').addEventListener('click', () => openOnSite('/hakkimda/'));
+	$('#btn-about-add-link').addEventListener('click', () => {
+		addAboutLink();
+		const last = state.about.links.at(-1);
+		$(`#about-link-${last.id}-label`)?.focus();
+	});
+
+	$('#about-links').addEventListener('click', (event) => {
+		const button = event.target.closest('[data-about-link]');
+		if (!button) return;
+		const index = state.about.links.findIndex((link) => link.id === button.dataset.id);
+		if (index < 0) return;
+		if (button.dataset.aboutLink === 'remove') {
+			state.about.links.splice(index, 1);
+			renderAboutLinks();
+		}
+		if (button.dataset.aboutLink === 'up' && index > 0) {
+			const [item] = state.about.links.splice(index, 1);
+			state.about.links.splice(index - 1, 0, item);
+			renderAboutLinks();
+		}
+		if (button.dataset.aboutLink === 'down' && index < state.about.links.length - 1) {
+			const [item] = state.about.links.splice(index, 1);
+			state.about.links.splice(index + 1, 0, item);
+			renderAboutLinks();
+		}
+	});
+
+	$('#about-links').addEventListener('input', (event) => {
+		const field = event.target.closest('[data-about-field]');
+		if (!field) return;
+		const link = state.about.links.find((item) => item.id === field.dataset.id);
+		if (link) link[field.dataset.aboutField] = field.value;
+	});
+
+	$('#about-message').addEventListener('click', (event) => {
+		if (event.target.id === 'btn-about-retry') openAbout({ reload: true });
+	});
 
 	$$('#about-toolbar [data-about-pane]').forEach((button) => {
 		button.addEventListener('click', () => setAboutPane(button.dataset.aboutPane));
@@ -1348,51 +1397,94 @@ function setAboutPane(pane) {
 
 async function openAbout({ reload = true } = {}) {
 	ensureAboutEditor();
-	if (!reload && state.about?.saved) {
+	if (!reload && state.about?.loaded) {
 		state.aboutCm.refresh();
 		return;
 	}
 
 	state.about = emptyAbout();
 	notice('#about-message', '');
+	$('#about-loading').hidden = false;
+	setAboutLoaded(false);
 	setAboutPane('write');
 
 	try {
 		const data = await api('/api/about');
 		fillAbout(data);
+		setAboutLoaded(true);
+		$('#about-loading').hidden = true;
+		state.aboutCm.refresh();
 	} catch (error) {
-		notice('#about-message', esc(error.message), 'error');
+		$('#about-loading').hidden = true;
+		setAboutLoaded(false);
+		notice(
+			'#about-message',
+			`Mevcut Hakkımda verileri yüklenemedi. Veri kaybını önlemek için kaydetme devre dışı bırakıldı.<br />${esc(error.message)}<br /><button type="button" class="btn btn--sm" id="btn-about-retry">Yeniden Dene</button>`,
+			'error',
+		);
 		toast(error.message, 'error');
 	}
-
-	state.aboutCm.refresh();
 }
 
 function fillAbout(data) {
+	if (!state.about) state.about = emptyAbout();
 	const about = state.about;
 	about.author = data.author ?? '';
 	about.authorBio = data.authorBio ?? '';
 	about.profileImage = data.profileImage ?? '';
 	about.imagePreview = data.profileImage ?? '';
 	about.imageUpload = null;
-	about.links = {
-		email: data.links?.email ?? '',
-		github: data.links?.github ?? '',
-		x: data.links?.x ?? '',
-		linkedin: data.links?.linkedin ?? '',
-	};
+	about.linkSeq = 0;
+	about.links = (Array.isArray(data.links) ? data.links : []).map((link) => ({
+		id: `l${(about.linkSeq += 1)}`,
+		label: link.label ?? '',
+		url: link.url ?? '',
+	}));
 	about.body = data.body ?? '';
+	about.loaded = true;
 
 	$('#f-about-author').value = about.author;
 	$('#f-about-bio').value = about.authorBio;
-	$('#f-about-email').value = about.links.email;
-	$('#f-about-github').value = about.links.github;
-	$('#f-about-x').value = about.links.x;
-	$('#f-about-linkedin').value = about.links.linkedin;
 	state.aboutCm.setValue(about.body);
 	state.aboutCm.clearHistory();
 	renderAboutPhoto();
+	renderAboutLinks();
 	about.saved = aboutSnapshot();
+}
+
+function addAboutLink(label = '', url = '') {
+	if (!state.about) return;
+	state.about.links.push({
+		id: `l${(state.about.linkSeq += 1)}`,
+		label,
+		url,
+	});
+	renderAboutLinks();
+}
+
+function renderAboutLinks() {
+	const links = state.about?.links ?? [];
+	$('#about-links').innerHTML = links.length
+		? links
+				.map(
+					(link, index) => `<div class="about-link">
+						<div class="field">
+							<label for="about-link-${link.id}-label">Bağlantı adı</label>
+							<input type="text" id="about-link-${link.id}-label" data-about-field="label" data-id="${link.id}" value="${esc(link.label)}" placeholder="Instagram, GitHub, E-posta…" autocomplete="off" />
+						</div>
+						<div class="field">
+							<label for="about-link-${link.id}-url">URL</label>
+							<input type="text" id="about-link-${link.id}-url" data-about-field="url" data-id="${link.id}" value="${esc(link.url)}" placeholder="https://… veya mailto:…" autocomplete="off" spellcheck="false" />
+						</div>
+						<div class="about-link__actions">
+							<button type="button" class="btn btn--sm btn--ghost" data-about-link="up" data-id="${link.id}" ${index === 0 ? 'disabled' : ''}>↑</button>
+							<button type="button" class="btn btn--sm btn--ghost" data-about-link="down" data-id="${link.id}" ${index === links.length - 1 ? 'disabled' : ''}>↓</button>
+							<button type="button" class="btn btn--sm btn--ghost" data-about-link="remove" data-id="${link.id}">Sil</button>
+						</div>
+					</div>`,
+				)
+				.join('')
+		: '<p class="hint">Henüz bağlantı yok. “+ Yeni Bağlantı Ekle” ile başla.</p>';
 }
 
 async function attachAboutImage(file) {
@@ -1434,27 +1526,24 @@ function renderAboutMediaPicker() {
 }
 
 function aboutLinkItems() {
-	const email = $('#f-about-email').value.trim();
-	const github = $('#f-about-github').value.trim();
-	const x = $('#f-about-x').value.trim();
-	const linkedin = $('#f-about-linkedin').value.trim();
-	return [
-		email ? { label: 'E-posta', value: email, href: `mailto:${email}` } : null,
-		github ? { label: 'GitHub', value: github, href: github } : null,
-		x ? { label: 'X', value: x, href: x } : null,
-		linkedin ? { label: 'LinkedIn', value: linkedin, href: linkedin } : null,
-	].filter(Boolean);
+	return collectAboutLinks()
+		.filter((link) => link.label && link.url)
+		.map((link) => ({ label: link.label, value: link.label, href: link.url }));
 }
 
 function validateAboutForm() {
+	if (!state.about?.loaded) {
+		notice(
+			'#about-message',
+			'Mevcut Hakkımda verileri yüklenemedi. Veri kaybını önlemek için kaydetme devre dışı bırakıldı.',
+			'error',
+		);
+		return null;
+	}
+
 	const author = $('#f-about-author').value.trim();
 	const authorBio = $('#f-about-bio').value.trim();
-	const email = $('#f-about-email').value.trim();
-	const urls = [
-		['GitHub', $('#f-about-github').value.trim()],
-		['X / Twitter', $('#f-about-x').value.trim()],
-		['LinkedIn', $('#f-about-linkedin').value.trim()],
-	];
+	const links = collectAboutLinks();
 
 	if (!author) {
 		notice('#about-message', 'Görünen isim boş olamaz.', 'error');
@@ -1466,22 +1555,36 @@ function validateAboutForm() {
 		$('#f-about-bio').focus();
 		return null;
 	}
-	if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-		notice('#about-message', 'E-posta adresi geçerli görünmüyor.', 'error');
-		$('#f-about-email').focus();
-		return null;
-	}
-	for (const [label, value] of urls) {
-		if (!value) continue;
+
+	const clean = [];
+	for (const [index, link] of links.entries()) {
+		if (!link.label && !link.url) continue;
+		if (!link.label) {
+			notice('#about-message', `Bağlantı ${index + 1} için bir ad yaz.`, 'error');
+			return null;
+		}
+		if (!link.url) {
+			notice('#about-message', `"${esc(link.label)}" için bir adres yaz.`, 'error');
+			return null;
+		}
+		const normalized =
+			/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(link.url) && !/^[a-z]+:/i.test(link.url)
+				? `mailto:${link.url}`
+				: link.url;
 		try {
-			const parsed = new URL(value);
-			if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+			const parsed = new URL(normalized);
+			if (!['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
 				throw new Error();
 			}
 		} catch {
-			notice('#about-message', `${label} geçerli bir adres olmalıdır (https://… ile başlamalı).`, 'error');
+			notice(
+				'#about-message',
+				`"${esc(link.label)}" geçerli bir adres olmalıdır (https://, http:// veya mailto:).`,
+				'error',
+			);
 			return null;
 		}
+		clean.push({ label: link.label, url: normalized });
 	}
 
 	return {
@@ -1489,12 +1592,7 @@ function validateAboutForm() {
 		authorBio,
 		profileImage: state.about.profileImage,
 		imageUpload: state.about.imageUpload,
-		links: {
-			email,
-			github: $('#f-about-github').value.trim(),
-			x: $('#f-about-x').value.trim(),
-			linkedin: $('#f-about-linkedin').value.trim(),
-		},
+		links: clean,
 		body: state.aboutCm.getValue(),
 	};
 }
@@ -1555,12 +1653,10 @@ async function saveAbout() {
 	button.textContent = 'Kaydediliyor…';
 
 	try {
-		const result = await api('/api/save-about', payload);
-		state.about.imageUpload = null;
-		state.about.profileImage = result.profileImage;
-		state.about.imagePreview = result.profileImage;
-		renderAboutPhoto();
-		state.about.saved = aboutSnapshot();
+		await api('/api/save-about', payload);
+		const fresh = await api('/api/about');
+		fillAbout(fresh);
+		setAboutLoaded(true);
 		await refreshBoot();
 		notice('#about-message', 'Hakkımda sayfası başarıyla güncellendi.');
 		toast('Hakkımda sayfası başarıyla güncellendi.');

@@ -46,14 +46,13 @@ export const siteConfig = {
 
 	/**
 	 * İletişim ve sosyal medya bağlantıları.
-	 * Kullanmak istemediğin bir alanı boş string ('') bırak; o zaman sitede görünmez.
+	 * Her öğe { label, url } biçimindedir. Boş bırakılan veya silinenler sitede görünmez.
+	 * url http(s) veya mailto olabilir.
 	 */
-	links: {
-		email: 'babbaturalp@gmail.com',
-		github: 'https://github.com/Bahtepp',
-		x: '',
-		linkedin: '',
-	},
+	links: [
+		{ label: 'E-posta', url: 'mailto:babbaturalp@gmail.com' },
+		{ label: 'GitHub', url: 'https://github.com/Bahtepp' },
+	],
 
 	/** Dakikada okunan ortalama kelime sayısı. Okuma süresi bundan hesaplanır. */
 	wordsPerMinute: 200,
@@ -63,6 +62,47 @@ export const siteConfig = {
 export const SITE_URL = siteConfig.useCustomDomain
 	? siteConfig.domain
 	: siteConfig.githubPagesUrl;
+
+const LEGACY_LINK_LABELS: Record<string, string> = {
+	email: '',
+	github: '',
+	x: '',
+	twitter: 'X',
+	linkedin: '',
+	instagram: 'Instagram',
+	youtube: 'YouTube',
+};
+
+export type SiteLink = { label: string; url: string };
+
+/**
+ * Hakkımda ve alt bilgide gösterilecek bağlantılar.
+ * Yeni dizi biçimini ve eski { email, github, ... } nesnesini okuyabilir.
+ */
+export function getSiteLinks(): SiteLink[] {
+	const raw = siteConfig.links as unknown;
+
+	if (Array.isArray(raw)) {
+		return raw
+			.map((item) => ({
+				label: String((item as SiteLink)?.label ?? '').trim(),
+				url: String((item as SiteLink)?.url ?? '').trim(),
+			}))
+			.filter((item) => item.label && item.url);
+	}
+
+	if (raw && typeof raw === 'object') {
+		return Object.entries(raw as Record<string, string>)
+			.filter(([, value]) => String(value ?? '').trim())
+			.map(([key, value]) => {
+				const text = String(value).trim();
+				const url = key === 'email' && !/^[a-z]+:/i.test(text) ? `mailto:${text}` : text;
+				return { label: LEGACY_LINK_LABELS[key] ?? key, url };
+			});
+	}
+
+	return [];
+}
 
 /** Header ve mobil menüdeki gezinme bağlantıları. */
 export const navigation = [

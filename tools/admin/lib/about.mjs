@@ -3,8 +3,9 @@
  * metin src/content/pages/hakkimda.md içinde tutulur.
  *
  * Config dosyası kör string replace ile yeniden yazılmaz. Yalnızca
- * author, authorBio, profileImage ve links.* alanları güncellenir;
- * diğer ayarlar ve yorumlar aynen kalır.
+ * author, authorBio, profileImage ve links bloğu güncellenir.
+ * links hem eski sabit nesne hem yeni dizi biçiminde okunabilir;
+ * kaydetme her zaman dizi yazar.
  */
 
 import fs from 'node:fs/promises';
@@ -21,11 +22,22 @@ import {
 import { parseFile } from './frontmatter.mjs';
 
 const AUTHOR_MAX = 80;
-const BIO_MAX = 240;
+const BIO_MAX = 400;
 const BODY_MAX = 40_000;
 const LINK_MAX = 240;
+const LINK_COUNT_MAX = 30;
 
-const LINK_KEYS = ['email', 'github', 'x', 'linkedin'];
+const ALLOWED_LINK_PROTOCOLS = new Set(['http:', 'https:', 'mailto:']);
+
+const LEGACY_LINK_LABELS = {
+	email: 'E-posta',
+	github: 'GitHub',
+	x: 'X',
+	twitter: 'X',
+	linkedin: 'LinkedIn',
+	instagram: 'Instagram',
+	youtube: 'YouTube',
+};
 
 const PROTECTED_MARKERS = [
 	'siteName:',
@@ -59,10 +71,6 @@ function unescapeTsString(value) {
 		.replace(/\\\\/g, '\\');
 }
 
-/**
- * Tek satırlık TypeScript string özelliğini okur.
- * `author` ile `authorBio` karışmasın diye kelime sınırı kullanılır.
- */
 function readTsStringProp(source, key) {
 	const re = new RegExp(`(?:^|\\n)[ \\t]*\\b${key}:\\s*(['"])((?:\\\\.|(?!\\1).)*)\\1`, 'm');
 	const match = re.exec(source);
@@ -80,6 +88,102 @@ function replaceTsStringProp(source, key, value) {
 	return source.replace(re, `$1'${escapeTsString(value)}'`);
 }
 
+function findBalancedBlock(source, start) {
+	const open = source[start];
+	if (open !== '{' && open !== '[') return null;
+	const close = open === '{' ? '}' : ']';
+	let depth = 0;
+	for (let index = start; index < source.length; index += 1) {
+		const char = source[index];
+		if (char === open) depth += 1;
+		if (char === close) {
+			depth -= 1;
+			if (depth === 0) return { start, end: index + 1, text: source.slice(start, index + 1) };
+		}
+	}
+	return null;
+}
+
+function findLinksBlock(source) {
+	const match = /(?:^|\n)([ \t]*)\blinks:\s*/.exec(source);
+	if (!match) return null;
+	const valueStart = match.index + match[0].length;
+	const block = findBalancedBlock(source, valueStart);
+	if (!block) return null;
+	return {
+		indent: match[1] ?? '\t',
+		start: match.index + (source[match.index] === '\n' ? 1 : 0),
+		end: block.end,
+		text: block.text,
+	};
+}
+
+function parseQuotedPairs(block) {
+	const pairs = [];
+	const re = /(?:^|[{\s,])([A-Za-z_][\w]*)\s*:\s*(['"])((?:\\.|.)*?)(\2)/g;
+	let match;
+	while ((match = re.exec(block))) {
+		pairs.push({ key: match[1], value: unescapeTsString(match[3]) });
+	}
+	return pairs;
+}
+
+function normalizeLinkUrl(raw) {
+	const text = String(raw ?? '').trim();
+	if (!text) return '';
+	if (EMAIL_RE.test(text) && !/^[a-z]+:/i.test(text)) return `mailto:${text}`;
+	return text;
+}
+
+function readLinks(source) {
+	const block = findLinksBlock(source);
+	if (!block) return [];
+
+	const text = block.text.trim();
+	if (text.startsWith('[')) {
+		const items = [];
+		const objectRe = /\{[^{}]*\}/g;
+		let objectMatch;
+		while ((objectMatch = objectRe.exec(text))) {
+			const pairs = Object.fromEntries(parseQuotedPairs(objectMatch[0]).map((pair) => [pair.key, pair.value]));
+			const label = String(pairs.label ?? '').trim();
+			const url = normalizeLinkUrl(pairs.url ?? pairs.href ?? '');
+			if (label && url) items.push({ label, url });
+		}
+		return items;
+	}
+
+	return parseQuotedPairs(text)
+		.filter((pair) => pair.key !== 'links')
+		.map((pair) => {
+			const url = normalizeLinkUrl(pair.value);
+			if (!url) return null;
+			const label = LEGACY_LINK_LABELS[pair.key] ?? pair.key;
+			return { label, url };
+		})
+		.filter(Boolean);
+}
+
+function serializeLinks(links, indent = '\t') {
+	const inner = indent + '\t';
+	if (links.length === 0) return `${indent}links: [],`;
+	const rows = links.map((link) => `${inner}{ label: '${escapeTsString(link.label)}', url: '${escapeTsString(link.url)}' },`);
+	return `${indent}links: [\n${rows.join('\n')}\n${indent}],`;
+}
+
+function replaceLinksBlock(source, links) {
+	const block = findLinksBlock(source);
+	if (!block) {
+		throw new AdminError('site.config.ts içinde links alanı bulunamadı; dosya yazılmadı.');
+	}
+	const serialized = serializeLinks(links, block.indent);
+	let after = source.slice(block.end);
+	if (after.startsWith(',')) after = after.slice(1);
+	if (after.startsWith('\r\n')) after = after.slice(2);
+	else if (after.startsWith('\n')) after = after.slice(1);
+	return `${source.slice(0, block.start)}${serialized}\n${after}`;
+}
+
 function requireSingleLine(value, label, max) {
 	const text = String(value ?? '').replace(/\r/g, '').trim();
 	if (text.includes('\n')) {
@@ -91,27 +195,41 @@ function requireSingleLine(value, label, max) {
 	return text;
 }
 
-function requireEmail(value) {
-	const text = requireSingleLine(value, 'E-posta', LINK_MAX);
-	if (text && !EMAIL_RE.test(text)) {
-		throw new AdminError('E-posta adresi geçerli görünmüyor.');
-	}
-	return text;
-}
-
-function requireHttpUrl(value, label) {
+function requireLinkUrl(value, label) {
 	const text = requireSingleLine(value, label, LINK_MAX);
-	if (!text) return '';
+	if (!text) throw new AdminError(`${label} için bir adres yaz.`);
+
+	const normalized = normalizeLinkUrl(text);
 	let parsed;
 	try {
-		parsed = new URL(text);
+		parsed = new URL(normalized);
 	} catch {
-		throw new AdminError(`${label} geçerli bir adres olmalıdır (https://… ile başlamalı).`);
+		throw new AdminError(`${label} geçerli bir adres olmalıdır (https:// veya mailto:).`);
 	}
-	if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-		throw new AdminError(`${label} yalnızca http veya https olabilir.`);
+	if (!ALLOWED_LINK_PROTOCOLS.has(parsed.protocol)) {
+		throw new AdminError(`${label} yalnızca http, https veya mailto olabilir.`);
 	}
-	return text;
+	return normalized;
+}
+
+function requireLinks(raw) {
+	if (raw == null) return [];
+	if (!Array.isArray(raw)) {
+		throw new AdminError('Bağlantılar dizi olmalıdır.');
+	}
+	if (raw.length > LINK_COUNT_MAX) {
+		throw new AdminError(`En fazla ${LINK_COUNT_MAX} bağlantı eklenebilir.`);
+	}
+
+	const out = [];
+	for (const [index, item] of raw.entries()) {
+		const label = requireSingleLine(item?.label, `Bağlantı ${index + 1} adı`, 80);
+		const url = String(item?.url ?? '').trim();
+		if (!label && !url) continue;
+		if (!label) throw new AdminError(`Bağlantı ${index + 1} için bir ad yaz.`);
+		out.push({ label, url: requireLinkUrl(url, label) });
+	}
+	return out;
 }
 
 function requireProfileImagePath(value) {
@@ -124,37 +242,45 @@ function requireProfileImagePath(value) {
 	return `/images/${fileName}`;
 }
 
+function maskEditable(source) {
+	let next = source;
+	for (const key of ['author', 'authorBio', 'profileImage']) {
+		next = next.replace(
+			new RegExp(`((?:^|\\n)[ \\t]*\\b${key}:\\s*)(['"])(?:\\\\.|(?!\\2).)*\\2`, 'm'),
+			`$1''`,
+		);
+	}
+	const block = findLinksBlock(next);
+	if (block) {
+		let after = next.slice(block.end);
+		if (after.startsWith(',')) after = after.slice(1);
+		if (after.startsWith('\r\n')) after = after.slice(2);
+		else if (after.startsWith('\n')) after = after.slice(1);
+		next = `${next.slice(0, block.start)}${block.indent}links: [],\n${after}`;
+	}
+	return next;
+}
+
 function assertProtectedConfig(before, after) {
 	for (const marker of PROTECTED_MARKERS) {
 		if (!after.includes(marker)) {
 			throw new AdminError(`site.config.ts güncellemesi ${marker} alanını kaybetti; dosya yazılmadı.`);
 		}
 	}
-
-	const beforeProtected = maskEditable(before);
-	const afterProtected = maskEditable(after);
-	if (beforeProtected !== afterProtected) {
+	if (maskEditable(before) !== maskEditable(after)) {
 		throw new AdminError(
 			'site.config.ts güncellemesi izin verilen alanların dışında bir değişiklik üretti; dosya yazılmadı.',
 		);
 	}
 }
 
-/** Düzenlenebilir alanları maskeleyerek geri kalan dosyayı karşılaştırılabilir hale getirir. */
-function maskEditable(source) {
-	let next = source;
-	for (const key of ['author', 'authorBio', 'profileImage', ...LINK_KEYS]) {
-		next = next.replace(
-			new RegExp(`((?:^|\\n)[ \\t]*\\b${key}:\\s*)(['"])(?:\\\\.|(?!\\2).)*\\2`, 'm'),
-			`$1''`,
-		);
-	}
-	return next;
-}
-
 function serializeAboutPage(title, body) {
 	const clean = String(body ?? '').replace(/\r\n/g, '\n').replace(/^\uFEFF/, '');
 	return `---\ntitle: ${JSON.stringify(title)}\n---\n\n${clean.replace(/\n+$/, '')}\n`;
+}
+
+function linksEqual(left, right) {
+	return JSON.stringify(left) === JSON.stringify(right);
 }
 
 async function exists(filePath) {
@@ -178,12 +304,7 @@ export async function readAbout() {
 		author: readTsStringProp(configSource, 'author'),
 		authorBio: readTsStringProp(configSource, 'authorBio'),
 		profileImage: readTsStringProp(configSource, 'profileImage'),
-		links: {
-			email: readTsStringProp(configSource, 'email'),
-			github: readTsStringProp(configSource, 'github'),
-			x: readTsStringProp(configSource, 'x'),
-			linkedin: readTsStringProp(configSource, 'linkedin'),
-		},
+		links: readLinks(configSource),
 		title: typeof data.title === 'string' ? data.title : 'Hakkımda',
 		body: String(body ?? '').replace(/^\n+/, ''),
 		previewPath: '/hakkimda/',
@@ -204,12 +325,7 @@ export async function saveAbout(payload) {
 		throw new AdminError(`Hakkımda yazısı çok uzun (en fazla ${BODY_MAX} karakter).`);
 	}
 
-	const links = {
-		email: requireEmail(payload?.links?.email),
-		github: requireHttpUrl(payload?.links?.github, 'GitHub'),
-		x: requireHttpUrl(payload?.links?.x, 'X / Twitter'),
-		linkedin: requireHttpUrl(payload?.links?.linkedin, 'LinkedIn'),
-	};
+	const links = requireLinks(payload?.links);
 
 	let profileImage = current.profileImage;
 	let imageResult = null;
@@ -229,13 +345,9 @@ export async function saveAbout(payload) {
 		author !== current.author ||
 		authorBio !== current.authorBio ||
 		profileImage !== current.profileImage ||
-		links.email !== current.links.email ||
-		links.github !== current.links.github ||
-		links.x !== current.links.x ||
-		links.linkedin !== current.links.linkedin;
+		!linksEqual(links, current.links);
 
 	const pageChanged = body.replace(/\n+$/, '') !== current.body.replace(/\n+$/, '');
-
 	const written = [];
 
 	if (configChanged) {
@@ -244,10 +356,7 @@ export async function saveAbout(payload) {
 		next = replaceTsStringProp(next, 'author', author);
 		next = replaceTsStringProp(next, 'authorBio', authorBio);
 		next = replaceTsStringProp(next, 'profileImage', profileImage);
-		next = replaceTsStringProp(next, 'email', links.email);
-		next = replaceTsStringProp(next, 'github', links.github);
-		next = replaceTsStringProp(next, 'x', links.x);
-		next = replaceTsStringProp(next, 'linkedin', links.linkedin);
+		next = replaceLinksBlock(next, links);
 		assertProtectedConfig(before, next);
 		await fs.writeFile(SITE_CONFIG_PATH, next, 'utf8');
 		written.push('src/site.config.ts');
@@ -265,12 +374,7 @@ export async function saveAbout(payload) {
 	}
 
 	return {
-		...current,
-		author,
-		authorBio,
-		profileImage,
-		links,
-		body,
+		...(await readAbout()),
 		image: imageResult,
 		written,
 		message: 'Hakkımda sayfası başarıyla güncellendi.',

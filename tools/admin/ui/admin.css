@@ -795,6 +795,27 @@ textarea {
 	border-radius: 5px;
 }
 
+.about-links {
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+	margin-top: 1rem;
+}
+
+.about-link {
+	border: 1px solid var(--rule);
+	border-radius: 6px;
+	padding: 0.7rem 0.75rem;
+	display: grid;
+	gap: 0.55rem;
+}
+
+.about-link__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+}
+
 /* --------------------------------------------------------- kaynaklar */
 
 .card {

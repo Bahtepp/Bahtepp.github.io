@@ -214,10 +214,13 @@ kod dosyası açmadan yönetebilirsin.
    `authorBio` değerleridir
 5. **Hakkımda Yazısı** aynı Markdown editörüdür (H2, H3, kalın, italik,
    link, alıntı, liste). **Düzenle / Önizle** ile metni kontrol et
-6. E-posta, GitHub, X ve LinkedIn alanlarını doldur. Boş bırakılanlar
-   sitede görünmez
+6. **İletişim ve Bağlantılar** bölümünde **+ Yeni Bağlantı Ekle**.
+   Bağlantıya istediğin adı verebilirsin: Instagram, GitHub, YouTube,
+   E-posta, kişisel site. Adres `https://`, `http://` veya `mailto:`
+   olabilir. ↑ ↓ ile sırayı değiştir, **Sil** ile kaldır
 7. **Değişiklikleri Kaydet** (veya Ctrl+S). Yalnızca değişen dosyalar
-   güncellenir
+   güncellenir. Kayıt sonrası form diskteki gerçek değerlerle yeniden
+   yüklenir
 
 Astro sunucusu açıksa **Gerçek Sayfada Önizle**
 `http://localhost:4321/hakkimda/` adresini açar.

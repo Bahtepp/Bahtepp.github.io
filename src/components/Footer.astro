@@ -1,15 +1,8 @@
 ---
-import { siteConfig } from '../site.config.ts';
+import { getSiteLinks, siteConfig } from '../site.config.ts';
 
 const year = new Date().getFullYear();
-
-// Yalnızca merkezi ayar dosyasında doldurulmuş bağlantılar gösterilir.
-const social = [
-	{ label: 'E-posta', href: siteConfig.links.email ? `mailto:${siteConfig.links.email}` : '' },
-	{ label: 'GitHub', href: siteConfig.links.github },
-	{ label: 'X', href: siteConfig.links.x },
-	{ label: 'LinkedIn', href: siteConfig.links.linkedin },
-].filter((link) => link.href);
+const social = getSiteLinks();
 ---
 
 <footer class="footer">
@@ -22,7 +15,7 @@ const social = [
 			<a href="/etiketler/">Etiketler</a>
 			<a href="/arama/">Arama</a>
 			<a href="/rss.xml">RSS</a>
-			{social.map((link) => <a href={link.href}>{link.label}</a>)}
+			{social.map((link) => <a href={link.url}>{link.label}</a>)}
 		</nav>
 	</div>
 </footer>
