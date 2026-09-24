@@ -11,13 +11,20 @@ export interface Props {
 
 const { post, showCategory = true } = Astro.props;
 const { data } = post;
+
+// Kategori de taslak etiketi de yoksa üst satır hiç basılmaz, boşluk bırakmaz.
+const hasHead = showCategory || data.draft;
 ---
 
 <a class="post-item" href={post.url}>
-	<div class="post-item__head">
-		{showCategory && <span class="eyebrow">{data.category}</span>}
-		{data.draft && <span class="draft-badge">Taslak</span>}
-	</div>
+	{
+		hasHead && (
+			<div class="post-item__head">
+				{showCategory && <span class="eyebrow">{data.category}</span>}
+				{data.draft && <span class="draft-badge">Taslak</span>}
+			</div>
+		)
+	}
 
 	<h3 class="post-item__title">{data.title}</h3>
 	<p class="post-item__desc">{data.description}</p>
