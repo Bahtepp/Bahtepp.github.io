@@ -50,8 +50,8 @@ export const siteConfig = {
 	 * url http(s) veya mailto olabilir.
 	 */
 	links: [
-		{ label: 'E-posta', url: 'mailto:babbaturalp@gmail.com' },
 		{ label: 'GitHub', url: 'https://github.com/Bahtepp' },
+		{ label: 'instagram', url: 'https://www.instagram.com/bahtep/' },
 	],
 
 	/** Dakikada okunan ortalama kelime sayısı. Okuma süresi bundan hesaplanır. */
