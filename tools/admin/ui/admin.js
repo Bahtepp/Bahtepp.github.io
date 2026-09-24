@@ -21,9 +21,12 @@ const state = {
 	view: 'list',
 	filter: 'all',
 	cm: null,
+	aboutCm: null,
 	pane: 'write',
+	aboutPane: 'write',
 	/** Düzenleyicinin o anki durumu. */
 	form: null,
+	about: null,
 };
 
 /* ------------------------------------------------------------------ açılış */
@@ -40,8 +43,10 @@ async function boot() {
 	bindNav();
 	bindListView();
 	bindEditor();
+	bindAbout();
 	bindMedia();
 	bindGit();
+	bindUnsavedGuard();
 
 	try {
 		await refreshBoot();
@@ -72,16 +77,22 @@ function applyTheme(theme) {
 /* --------------------------------------------------------------- gezinme */
 
 function bindNav() {
-	document.addEventListener('click', (event) => {
+	document.addEventListener('click', async (event) => {
 		const trigger = event.target.closest('[data-nav]');
 		if (!trigger) return;
 		const target = trigger.dataset.nav;
-		if (target === 'new') openEditor({ collection: trigger.dataset.collection });
-		else setView(target);
+		if (target === 'new') {
+			if (!(await confirmLeaveAbout())) return;
+			openEditor({ collection: trigger.dataset.collection });
+			return;
+		}
+		if (!(await confirmLeaveAbout(target))) return;
+		setView(target);
 	});
 }
 
 function setView(view) {
+	const previous = state.view;
 	state.view = view;
 	$$('.view').forEach((section) => {
 		section.hidden = section.dataset.view !== view;
@@ -96,6 +107,7 @@ function setView(view) {
 	if (view === 'list') renderList();
 	if (view === 'media') loadMedia();
 	if (view === 'git') loadGit();
+	if (view === 'about') openAbout({ reload: previous !== 'about' });
 	if (view === 'editor' && state.cm) state.cm.refresh();
 }
 
@@ -122,7 +134,10 @@ function bindListView() {
 		if (!button) return;
 		const { action, collection, slug } = button.dataset;
 
-		if (action === 'edit') return openEditor({ collection, slug });
+		if (action === 'edit') {
+			if (!(await confirmLeaveAbout())) return;
+			return openEditor({ collection, slug });
+		}
 		if (action === 'preview') return openOnSite(`${collectionOf(collection).urlBase}/${slug}/`);
 
 		if (action === 'toggle-draft') {
@@ -757,8 +772,12 @@ function insertFootnote(key) {
 	checkFootnotes();
 }
 
+function activeEditor() {
+	return state.view === 'about' ? state.aboutCm : state.cm;
+}
+
 function wrapSelection(before, after = before) {
-	const cm = state.cm;
+	const cm = activeEditor();
 	const selection = cm.getSelection();
 	cm.replaceSelection(`${before}${selection}${after}`);
 	if (!selection) {
@@ -770,7 +789,7 @@ function wrapSelection(before, after = before) {
 
 /** Seçili satırların başına işaret koyar; aynı işaret varsa kaldırır. */
 function prefixLines(prefixFor) {
-	const cm = state.cm;
+	const cm = activeEditor();
 	const from = cm.getCursor('from').line;
 	const to = cm.getCursor('to').line;
 	const existing = /^(#{1,6} |> |- |\d+\. )/;
@@ -786,7 +805,7 @@ function prefixLines(prefixFor) {
 }
 
 function insertBlock(text) {
-	const cm = state.cm;
+	const cm = activeEditor();
 	const cursor = cm.getCursor();
 	const line = cm.getLine(cursor.line) ?? '';
 	const lead = line.trim() === '' ? '' : '\n\n';
@@ -820,11 +839,12 @@ async function applyMarkdown(action) {
 			return wrapSelection('`');
 		}
 		case 'link': {
-			const selection = state.cm.getSelection() || 'bağlantı metni';
-			state.cm.replaceSelection(`[${selection}](https://)`);
-			const cursor = state.cm.getCursor();
-			state.cm.setCursor({ line: cursor.line, ch: cursor.ch - 1 });
-			return state.cm.focus();
+			const cm = activeEditor();
+			const selection = cm.getSelection() || 'bağlantı metni';
+			cm.replaceSelection(`[${selection}](https://)`);
+			const cursor = cm.getCursor();
+			cm.setCursor({ line: cursor.line, ch: cursor.ch - 1 });
+			return cm.focus();
 		}
 		case 'image': {
 			const path = await chooseImage();
@@ -1195,7 +1215,366 @@ function bindGit() {
 	});
 }
 
+/* ----------------------------------------------------------------- hakkımda */
+
+function emptyAbout() {
+	return {
+		author: '',
+		authorBio: '',
+		profileImage: '',
+		links: { email: '', github: '', x: '', linkedin: '' },
+		body: '',
+		imageUpload: null,
+		imagePreview: '',
+		saved: '',
+	};
+}
+
+function aboutSnapshot() {
+	const about = state.about;
+	if (!about) return '';
+	return JSON.stringify({
+		author: $('#f-about-author').value,
+		authorBio: $('#f-about-bio').value,
+		profileImage: about.profileImage,
+		imageUpload: about.imageUpload?.name ?? '',
+		email: $('#f-about-email').value,
+		github: $('#f-about-github').value,
+		x: $('#f-about-x').value,
+		linkedin: $('#f-about-linkedin').value,
+		body: state.aboutCm ? state.aboutCm.getValue() : $('#f-about-body').value,
+	});
+}
+
+function isAboutDirty() {
+	return Boolean(state.about && aboutSnapshot() !== state.about.saved);
+}
+
+async function confirmLeaveAbout(nextView) {
+	if (nextView === 'about') return true;
+	if (state.view !== 'about' || !isAboutDirty()) return true;
+	return confirmDialog({
+		title: 'Kaydedilmemiş değişiklikler',
+		confirmText: 'Ayrıl',
+		html: '<p>Kaydedilmemiş değişikliklerin var.</p>',
+	});
+}
+
+function bindUnsavedGuard() {
+	window.addEventListener('beforeunload', (event) => {
+		if (state.view === 'about' && isAboutDirty()) {
+			event.preventDefault();
+			event.returnValue = '';
+		}
+	});
+
+	document.addEventListener('keydown', (event) => {
+		if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 's') return;
+		if (state.view !== 'about') return;
+		event.preventDefault();
+		saveAbout();
+	});
+}
+
+function bindAbout() {
+	ensureAboutEditor();
+
+	$('#btn-about-save').addEventListener('click', () => saveAbout());
+	$('#btn-about-site').addEventListener('click', () => openOnSite('/hakkimda/'));
+
+	$$('#about-toolbar [data-about-pane]').forEach((button) => {
+		button.addEventListener('click', () => setAboutPane(button.dataset.aboutPane));
+	});
+
+	$('#about-toolbar').addEventListener('click', (event) => {
+		const button = event.target.closest('[data-about-md]');
+		if (button) applyMarkdown(button.dataset.aboutMd);
+	});
+
+	$('#btn-about-photo').addEventListener('click', () => $('#about-file').click());
+	$('#about-file').addEventListener('change', async (event) => {
+		const file = event.target.files?.[0];
+		event.target.value = '';
+		if (!file) return;
+		try {
+			await attachAboutImage(file);
+		} catch (error) {
+			toast(error.message, 'error');
+		}
+	});
+
+	$('#btn-about-media').addEventListener('click', () => {
+		const picker = $('#about-media-picker');
+		picker.hidden = !picker.hidden;
+		if (!picker.hidden) renderAboutMediaPicker();
+	});
+
+	$('#about-media-picker').addEventListener('click', (event) => {
+		const button = event.target.closest('button[data-path]');
+		if (!button) return;
+		state.about.imageUpload = null;
+		state.about.profileImage = button.dataset.path;
+		state.about.imagePreview = button.dataset.path;
+		$('#about-media-picker').hidden = true;
+		renderAboutPhoto();
+	});
+}
+
+function ensureAboutEditor() {
+	if (state.aboutCm) return;
+	state.aboutCm = CodeMirror.fromTextArea($('#f-about-body'), {
+		mode: 'markdown',
+		lineWrapping: true,
+		lineNumbers: false,
+		viewportMargin: 30,
+		extraKeys: {
+			Enter: 'newlineAndIndentContinueMarkdownList',
+			'Ctrl-S': () => saveAbout(),
+			'Cmd-S': () => saveAbout(),
+		},
+	});
+}
+
+function setAboutPane(pane) {
+	state.aboutPane = pane;
+	$$('#about-toolbar [data-about-pane]').forEach((button) => {
+		button.setAttribute('aria-selected', button.dataset.aboutPane === pane ? 'true' : 'false');
+	});
+	$('#about-pane-write').hidden = pane !== 'write';
+	$('#about-pane-preview').hidden = pane !== 'preview';
+	if (pane === 'write') state.aboutCm?.refresh();
+	else renderAboutPreview();
+}
+
+async function openAbout({ reload = true } = {}) {
+	ensureAboutEditor();
+	if (!reload && state.about?.saved) {
+		state.aboutCm.refresh();
+		return;
+	}
+
+	state.about = emptyAbout();
+	notice('#about-message', '');
+	setAboutPane('write');
+
+	try {
+		const data = await api('/api/about');
+		fillAbout(data);
+	} catch (error) {
+		notice('#about-message', esc(error.message), 'error');
+		toast(error.message, 'error');
+	}
+
+	state.aboutCm.refresh();
+}
+
+function fillAbout(data) {
+	const about = state.about;
+	about.author = data.author ?? '';
+	about.authorBio = data.authorBio ?? '';
+	about.profileImage = data.profileImage ?? '';
+	about.imagePreview = data.profileImage ?? '';
+	about.imageUpload = null;
+	about.links = {
+		email: data.links?.email ?? '',
+		github: data.links?.github ?? '',
+		x: data.links?.x ?? '',
+		linkedin: data.links?.linkedin ?? '',
+	};
+	about.body = data.body ?? '';
+
+	$('#f-about-author').value = about.author;
+	$('#f-about-bio').value = about.authorBio;
+	$('#f-about-email').value = about.links.email;
+	$('#f-about-github').value = about.links.github;
+	$('#f-about-x').value = about.links.x;
+	$('#f-about-linkedin').value = about.links.linkedin;
+	state.aboutCm.setValue(about.body);
+	state.aboutCm.clearHistory();
+	renderAboutPhoto();
+	about.saved = aboutSnapshot();
+}
+
+async function attachAboutImage(file) {
+	const limit = state.boot.limits.imageMb;
+	const allowed = state.boot.limits.imageExtensions;
+	const ext = `.${file.name.split('.').pop()?.toLowerCase()}`;
+	if (!allowed.includes(ext)) {
+		throw new Error(`Bu biçim kabul edilmiyor. İzin verilenler: ${allowed.join(', ')}`);
+	}
+	if (file.size > limit * 1024 * 1024) {
+		throw new Error(`Görsel çok büyük (${formatSize(file.size)}). Sınır ${limit} MB.`);
+	}
+
+	const data = await readFileAsBase64(file);
+	state.about.imageUpload = { name: file.name, data };
+	state.about.imagePreview = `data:${file.type};base64,${data}`;
+	renderAboutPhoto();
+}
+
+function renderAboutPhoto() {
+	const preview = state.about?.imagePreview;
+	$('#about-photo').innerHTML = preview
+		? `<img src="${esc(preview)}" alt="Profil fotoğrafı önizlemesi" />`
+		: 'Fotoğraf yok';
+}
+
+function renderAboutMediaPicker() {
+	const images = state.boot?.images ?? [];
+	$('#about-media-picker').innerHTML = images.length
+		? images
+				.map(
+					(image) =>
+						`<button type="button" data-path="${esc(image.path)}" title="${esc(image.name)}">
+							<img src="${esc(image.path)}" alt="" /><span>${esc(image.name)}</span>
+						</button>`,
+				)
+				.join('')
+		: '<p class="hint">public/images klasöründe henüz görsel yok.</p>';
+}
+
+function aboutLinkItems() {
+	const email = $('#f-about-email').value.trim();
+	const github = $('#f-about-github').value.trim();
+	const x = $('#f-about-x').value.trim();
+	const linkedin = $('#f-about-linkedin').value.trim();
+	return [
+		email ? { label: 'E-posta', value: email, href: `mailto:${email}` } : null,
+		github ? { label: 'GitHub', value: github, href: github } : null,
+		x ? { label: 'X', value: x, href: x } : null,
+		linkedin ? { label: 'LinkedIn', value: linkedin, href: linkedin } : null,
+	].filter(Boolean);
+}
+
+function validateAboutForm() {
+	const author = $('#f-about-author').value.trim();
+	const authorBio = $('#f-about-bio').value.trim();
+	const email = $('#f-about-email').value.trim();
+	const urls = [
+		['GitHub', $('#f-about-github').value.trim()],
+		['X / Twitter', $('#f-about-x').value.trim()],
+		['LinkedIn', $('#f-about-linkedin').value.trim()],
+	];
+
+	if (!author) {
+		notice('#about-message', 'Görünen isim boş olamaz.', 'error');
+		$('#f-about-author').focus();
+		return null;
+	}
+	if (!authorBio) {
+		notice('#about-message', 'Kısa tanım / ünvan boş olamaz.', 'error');
+		$('#f-about-bio').focus();
+		return null;
+	}
+	if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+		notice('#about-message', 'E-posta adresi geçerli görünmüyor.', 'error');
+		$('#f-about-email').focus();
+		return null;
+	}
+	for (const [label, value] of urls) {
+		if (!value) continue;
+		try {
+			const parsed = new URL(value);
+			if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+				throw new Error();
+			}
+		} catch {
+			notice('#about-message', `${label} geçerli bir adres olmalıdır (https://… ile başlamalı).`, 'error');
+			return null;
+		}
+	}
+
+	return {
+		author,
+		authorBio,
+		profileImage: state.about.profileImage,
+		imageUpload: state.about.imageUpload,
+		links: {
+			email,
+			github: $('#f-about-github').value.trim(),
+			x: $('#f-about-x').value.trim(),
+			linkedin: $('#f-about-linkedin').value.trim(),
+		},
+		body: state.aboutCm.getValue(),
+	};
+}
+
+async function renderAboutPreview() {
+	const frame = $('#about-preview-frame');
+	const theme = document.documentElement.dataset.theme;
+	const author = esc($('#f-about-author').value.trim() || 'İsim');
+	const bio = esc($('#f-about-bio').value.trim());
+	const photo = esc(state.about?.imagePreview || '');
+	const links = aboutLinkItems();
+
+	try {
+		const { html } = await api('/api/preview', { markdown: state.aboutCm.getValue() });
+		const contact = links.length
+			? `<section class="about__links"><div class="section-head"><h2>İletişim</h2></div>
+				<dl class="contact">${links
+					.map(
+						(link) =>
+							`<div class="contact__row"><dt>${esc(link.label)}</dt><dd><a class="text-link" href="${esc(link.href)}">${esc(link.value)}</a></dd></div>`,
+					)
+					.join('')}</dl></section>`
+			: '';
+
+		frame.srcdoc = `<!doctype html><html lang="tr" data-theme="${theme}"><head><meta charset="utf-8" />
+			<link rel="stylesheet" href="/site.css" />
+			<style>
+				body{margin:0}
+				.about{max-width:42rem;margin:0 auto;padding:2.5rem 1.25rem}
+				.about__header{display:flex;flex-wrap:wrap;align-items:center;gap:1.75rem 2.25rem;padding-bottom:2.5rem;border-bottom:1px solid var(--rule)}
+				.about__photo{width:8rem;height:8rem;object-fit:cover;border:1px solid var(--rule-strong);background:var(--bg-subtle)}
+				.about__bio{margin-top:2.5rem}
+				.about__links{margin-top:4rem}
+				.contact{margin:0}
+				.contact__row{display:grid;grid-template-columns:8rem 1fr;gap:.5rem 1.5rem;padding:.8rem 0;border-bottom:1px solid var(--rule)}
+				.contact dt{font-family:var(--font-sans);font-size:var(--step--1);color:var(--text-muted)}
+				.contact dd{margin:0;overflow-wrap:anywhere}
+			</style></head>
+			<body><div class="wrap about">
+				<header class="about__header">
+					${photo ? `<img class="about__photo" src="${photo}" alt="${author} profil fotoğrafı" width="160" height="160" />` : ''}
+					<div><h1 class="page-title">Hakkımda</h1><p class="page-intro">${bio}</p></div>
+				</header>
+				<div class="prose about__bio">${html}</div>
+				${contact}
+			</div></body></html>`;
+	} catch (error) {
+		frame.srcdoc = `<!doctype html><meta charset="utf-8" /><p style="font-family:sans-serif;color:#a3231a">Önizleme oluşturulamadı: ${esc(error.message)}</p>`;
+	}
+}
+
+async function saveAbout() {
+	const payload = validateAboutForm();
+	if (!payload) return;
+
+	const button = $('#btn-about-save');
+	button.disabled = true;
+	button.textContent = 'Kaydediliyor…';
+
+	try {
+		const result = await api('/api/save-about', payload);
+		state.about.imageUpload = null;
+		state.about.profileImage = result.profileImage;
+		state.about.imagePreview = result.profileImage;
+		renderAboutPhoto();
+		state.about.saved = aboutSnapshot();
+		await refreshBoot();
+		notice('#about-message', 'Hakkımda sayfası başarıyla güncellendi.');
+		toast('Hakkımda sayfası başarıyla güncellendi.');
+	} catch (error) {
+		notice('#about-message', esc(error.message), 'error');
+		toast(error.message, 'error');
+	} finally {
+		button.disabled = false;
+		button.textContent = 'Değişiklikleri Kaydet';
+	}
+}
+
 /* -------------------------------------------------------------------------- */
 
 state.form = emptyForm('yazilar');
+state.about = emptyAbout();
 boot();

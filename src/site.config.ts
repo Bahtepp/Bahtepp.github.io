@@ -20,7 +20,7 @@ export const siteConfig = {
 	author: 'Bahtep',
 
 	/** Yazar hakkında tek cümlelik tanım. */
-	authorBio: 'Yazıyor, okuyor, not alıyor.',
+	authorBio: 'Düşünürüm, hep düşünürüm çok düşünürüm bazen araştırırım. linçlenecek fikirlerim var o yüzden monolog bi site geliştirdim :D',
 
 	/** İleride kullanılacak kendi alan adı. */
 	domain: 'https://bahtep.com',
@@ -39,7 +39,7 @@ export const siteConfig = {
 	locale: 'tr_TR',
 
 	/** Hakkımda sayfasındaki profil fotoğrafı. Dosyayı public/images/ içine koy. */
-	profileImage: '/images/profile-placeholder.svg',
+	profileImage: '/images/bahtep-pp.jpeg',
 
 	/** Paylaşım kartlarında kullanılacak varsayılan görsel. Boş bırakılabilir. */
 	defaultImage: '',
@@ -49,7 +49,7 @@ export const siteConfig = {
 	 * Kullanmak istemediğin bir alanı boş string ('') bırak; o zaman sitede görünmez.
 	 */
 	links: {
-		email: '',
+		email: 'babbaturalp@gmail.com',
 		github: 'https://github.com/Bahtepp',
 		x: '',
 		linkedin: '',

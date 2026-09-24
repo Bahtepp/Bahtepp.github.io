@@ -198,6 +198,33 @@ başka bir dosyanın üzerine yazılmaz.
 `http://localhost:4321/...` adresini açar. Kapalıysa **Siteyi Başlat**
 diyebilirsin.
 
+### Hakkımda Sayfasını Düzenleme
+
+Soldaki **Hakkımda** sayfasından profilini, tanıtım metnini ve bağlantılarını
+kod dosyası açmadan yönetebilirsin.
+
+1. Panelde **Hakkımda** seç
+2. Form mevcut `src/site.config.ts` ve `src/content/pages/hakkimda.md`
+   değerleriyle dolar
+3. **Profil Fotoğrafını Değiştir** ile bilgisayarından `.jpg`, `.jpeg`,
+   `.png` veya `.webp` seç; ya da **Medya kütüphanesi** ile
+   `public/images/` içinden bir görsel seç. Kaydetmeden önce önizleme görünür.
+   Eski fotoğraf silinmez
+4. Görünen isim ve kısa tanım / ünvan, sitede kullanılan `author` ve
+   `authorBio` değerleridir
+5. **Hakkımda Yazısı** aynı Markdown editörüdür (H2, H3, kalın, italik,
+   link, alıntı, liste). **Düzenle / Önizle** ile metni kontrol et
+6. E-posta, GitHub, X ve LinkedIn alanlarını doldur. Boş bırakılanlar
+   sitede görünmez
+7. **Değişiklikleri Kaydet** (veya Ctrl+S). Yalnızca değişen dosyalar
+   güncellenir
+
+Astro sunucusu açıksa **Gerçek Sayfada Önizle**
+`http://localhost:4321/hakkimda/` adresini açar.
+
+Kaydettikten sonra soldaki **GitHub** sayfasından değişiklikleri her zamanki
+gibi gönder. Hakkımda için ayrı bir gönderim ekranı yoktur.
+
 ### GitHub'a gönderme
 
 Soldaki **GitHub** sayfasında:

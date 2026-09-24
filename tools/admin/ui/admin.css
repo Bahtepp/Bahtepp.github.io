@@ -701,13 +701,98 @@ textarea {
 	background: var(--code-bg);
 }
 
-#preview-frame {
+#preview-frame,
+#about-preview-frame {
 	width: 100%;
 	height: 60vh;
 	min-height: 22rem;
 	border: 0;
 	display: block;
 	background: var(--panel);
+}
+
+.about-panes {
+	border: 1px solid var(--rule-strong);
+	border-top: 0;
+	border-radius: 0 0 5px 5px;
+	background: var(--panel);
+	padding: 1.2rem 1.25rem 1.5rem;
+}
+
+#about-pane-preview {
+	margin: -1.2rem -1.25rem -1.5rem;
+}
+
+.about-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 18rem;
+	gap: 1.5rem 2rem;
+	align-items: start;
+}
+
+@media (max-width: 64rem) {
+	.about-layout {
+		grid-template-columns: 1fr;
+	}
+}
+
+.about-photo-card {
+	margin-top: 0;
+	margin-bottom: 1.25rem;
+}
+
+.about-photo-card > label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.6rem;
+}
+
+.about-photo {
+	width: 8rem;
+	height: 8rem;
+	border: 1px solid var(--rule-strong);
+	background: var(--bg-subtle);
+	margin-bottom: 0.75rem;
+	display: grid;
+	place-items: center;
+	overflow: hidden;
+	color: var(--text-muted);
+	font-size: 0.8rem;
+}
+
+.about-photo img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+#about-toolbar {
+	border-radius: 5px 5px 0 0;
+}
+
+#about-toolbar button[data-about-md] {
+	min-width: 2rem;
+	border: 0;
+	background: transparent;
+	color: var(--text);
+	font: inherit;
+	font-size: 0.85rem;
+	padding: 0.3rem 0.4rem;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+#about-toolbar button[data-about-md]:hover {
+	background: var(--accent-subtle);
+	color: var(--accent);
+}
+
+.about-main .CodeMirror {
+	height: 22rem;
+	min-height: 16rem;
+	border: 1px solid var(--rule-strong);
+	border-radius: 5px;
 }
 
 /* --------------------------------------------------------- kaynaklar */

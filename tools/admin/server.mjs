@@ -28,6 +28,7 @@ import * as store from './lib/store.mjs';
 import * as git from './lib/git.mjs';
 import { joinFootnoteDefinitions } from './lib/frontmatter.mjs';
 import { renderMarkdown } from './lib/preview.mjs';
+import * as about from './lib/about.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const UI_DIR = path.join(HERE, 'ui');
@@ -247,6 +248,16 @@ const routes = {
 		running: await store.probeDevServer(DEV_PORT),
 		url: `http://localhost:${DEV_PORT}`,
 	}),
+
+	'/api/about': async () => about.readAbout(),
+
+	'/api/save-about': async (body) => {
+		let savedImage = null;
+		if (body.imageUpload) {
+			savedImage = await store.saveImage(body.imageUpload);
+		}
+		return about.saveAbout({ ...body, savedImage, imageUpload: undefined });
+	},
 
 	'/api/dev-server/start': async () => {
 		const running = await store.probeDevServer(DEV_PORT);

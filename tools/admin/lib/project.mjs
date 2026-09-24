@@ -16,6 +16,8 @@ export const ROOT = path.resolve(here, '..', '..', '..');
 
 export const CONTENT_ROOT = path.join(ROOT, 'src', 'content');
 export const IMAGES_DIR = path.join(ROOT, 'public', 'images');
+export const SITE_CONFIG_PATH = path.join(ROOT, 'src', 'site.config.ts');
+export const ABOUT_PAGE_PATH = path.join(CONTENT_ROOT, 'pages', 'hakkimda.md');
 
 /** Panelin yönettiği üç koleksiyon. src/content.config.ts ile aynı olmalıdır. */
 export const COLLECTIONS = {

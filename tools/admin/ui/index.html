@@ -22,6 +22,7 @@
 					<button type="button" data-nav="new" data-collection="arastirmalar">Yeni Araştırma</button>
 					<button type="button" data-nav="new" data-collection="notlar">Yeni Not</button>
 					<button type="button" data-nav="media">Medya</button>
+					<button type="button" data-nav="about">Hakkımda</button>
 					<button type="button" data-nav="git">GitHub</button>
 				</nav>
 
@@ -212,6 +213,107 @@
 					</header>
 					<div id="media-message" class="notice" hidden></div>
 					<div class="media-grid" id="media-grid"></div>
+				</section>
+
+				<!-- HAKKIMDA -->
+				<section class="view" data-view="about" hidden>
+					<header class="view__head view__head--row">
+						<div>
+							<h1>Hakkımda</h1>
+							<p class="muted">Profil fotoğrafı, kısa tanım, metin ve bağlantılar.</p>
+						</div>
+						<div class="view__actions">
+							<button type="button" class="btn btn--ghost" id="btn-about-site">Gerçek Sayfada Önizle</button>
+							<button type="button" class="btn btn--primary" id="btn-about-save">Değişiklikleri Kaydet</button>
+						</div>
+					</header>
+
+					<div id="about-message" class="notice" hidden></div>
+
+					<div class="editor-toolbar" id="about-toolbar">
+						<button type="button" data-about-md="h2" title="İkinci düzey başlık">H2</button>
+						<button type="button" data-about-md="h3" title="Üçüncü düzey başlık">H3</button>
+						<span class="sep" aria-hidden="true"></span>
+						<button type="button" data-about-md="bold" title="Kalın"><b>K</b></button>
+						<button type="button" data-about-md="italic" title="İtalik"><i>İ</i></button>
+						<span class="sep" aria-hidden="true"></span>
+						<button type="button" data-about-md="quote" title="Alıntı">&rdquo;</button>
+						<button type="button" data-about-md="ul" title="Madde listesi">•—</button>
+						<button type="button" data-about-md="ol" title="Numaralı liste">1.</button>
+						<span class="sep" aria-hidden="true"></span>
+						<button type="button" data-about-md="link" title="Link">Link</button>
+						<span class="spacer"></span>
+						<div class="tabs" role="tablist" aria-label="Hakkımda görünümü">
+							<button type="button" role="tab" data-about-pane="write" aria-selected="true">Düzenle</button>
+							<button type="button" role="tab" data-about-pane="preview" aria-selected="false">Önizle</button>
+						</div>
+					</div>
+
+					<div class="about-panes">
+						<div id="about-pane-write">
+							<div class="about-layout">
+								<div class="about-main">
+									<div class="card about-photo-card">
+										<label>Profil fotoğrafı</label>
+										<div class="about-photo" id="about-photo"></div>
+										<div class="cover__actions">
+											<button type="button" class="btn btn--sm" id="btn-about-photo">Profil Fotoğrafını Değiştir</button>
+											<button type="button" class="btn btn--sm btn--ghost" id="btn-about-media">Medya kütüphanesi</button>
+										</div>
+										<input type="file" id="about-file" accept=".jpg,.jpeg,.png,.webp" hidden />
+										<div class="media-picker" id="about-media-picker" hidden></div>
+										<p class="hint">Yeni görsel <code>public/images/</code> altına kaydedilir. Eski fotoğraf silinmez.</p>
+									</div>
+
+									<div class="field">
+										<label for="f-about-author">Görünen İsim</label>
+										<input type="text" id="f-about-author" autocomplete="off" />
+									</div>
+
+									<div class="field">
+										<label for="f-about-bio">Kısa Tanım / Ünvan</label>
+										<input type="text" id="f-about-bio" autocomplete="off" />
+										<p class="hint">Hakkımda sayfasının üstünde, ismin yanında görünür.</p>
+									</div>
+
+									<div class="field">
+										<label for="f-about-body">Hakkımda Yazısı</label>
+										<p class="hint">Markdown ile yaz. HTML veya Astro kodu yazmana gerek yok.</p>
+										<textarea id="f-about-body"></textarea>
+									</div>
+								</div>
+
+								<aside class="about-side">
+									<section class="card">
+										<header class="card__head">
+											<h2>İletişim ve Bağlantılar</h2>
+										</header>
+										<p class="hint">Boş bırakılan alanlar sitede görünmez. Değerler <code>src/site.config.ts</code> içindeki <code>links</code> alanına yazılır.</p>
+										<div class="field">
+											<label for="f-about-email">E-posta</label>
+											<input type="email" id="f-about-email" autocomplete="off" placeholder="ornek@eposta.com" />
+										</div>
+										<div class="field">
+											<label for="f-about-github">GitHub</label>
+											<input type="url" id="f-about-github" autocomplete="off" placeholder="https://github.com/…" />
+										</div>
+										<div class="field">
+											<label for="f-about-x">X / Twitter</label>
+											<input type="url" id="f-about-x" autocomplete="off" placeholder="https://x.com/…" />
+										</div>
+										<div class="field">
+											<label for="f-about-linkedin">LinkedIn</label>
+											<input type="url" id="f-about-linkedin" autocomplete="off" placeholder="https://www.linkedin.com/in/…" />
+										</div>
+									</section>
+								</aside>
+							</div>
+						</div>
+
+						<div id="about-pane-preview" hidden>
+							<iframe id="about-preview-frame" title="Hakkımda önizlemesi"></iframe>
+						</div>
+					</div>
 				</section>
 
 				<!-- GITHUB -->

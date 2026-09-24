@@ -52,4 +52,16 @@ const notlar = defineCollection({
 	}),
 });
 
-export const collections = { yazilar, arastirmalar, notlar };
+/**
+ * Statik sayfa metinleri. Liste, RSS ve etiket sayfalarına girmez;
+ * yalnızca ilgili Astro sayfası (ör. /hakkimda/) bunları okur.
+ */
+const pages = defineCollection({
+	loader: glob({ base: './src/content/pages', pattern: '**/*.{md,mdx}' }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string().optional(),
+	}),
+});
+
+export const collections = { yazilar, arastirmalar, notlar, pages };
