@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="tr" data-theme="light">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>BAHTEP / İçerik Yönetimi</title>
+		<link rel="stylesheet" href="/vendor/codemirror.css" />
+		<link rel="stylesheet" href="/admin.css" />
+	</head>
+	<body>
+		<div class="app">
+			<aside class="sidebar">
+				<div class="sidebar__brand">
+					<strong>BAHTEP</strong>
+					<span>İçerik Yönetimi</span>
+				</div>
+
+				<nav class="sidebar__nav">
+					<button type="button" data-nav="list">İçerikler</button>
+					<button type="button" data-nav="new" data-collection="yazilar">Yeni Yazı</button>
+					<button type="button" data-nav="new" data-collection="arastirmalar">Yeni Araştırma</button>
+					<button type="button" data-nav="new" data-collection="notlar">Yeni Not</button>
+					<button type="button" data-nav="media">Medya</button>
+					<button type="button" data-nav="git">GitHub</button>
+				</nav>
+
+				<div class="sidebar__foot">
+					<p class="dev-state" id="dev-state">Site sunucusu kontrol ediliyor…</p>
+					<button type="button" class="btn btn--ghost btn--sm" id="theme-toggle">Koyu tema</button>
+				</div>
+			</aside>
+
+			<main class="main" id="main">
+				<!-- İÇERİK LİSTESİ -->
+				<section class="view" data-view="list">
+					<header class="view__head">
+						<h1>BAHTEP <span aria-hidden="true">/</span> İçerik Yönetimi</h1>
+						<p class="muted">Yazılarını buradan oluştur, düzenle ve yayınla.</p>
+					</header>
+
+					<div class="create-grid">
+						<button type="button" class="create-card" data-nav="new" data-collection="yazilar">
+							<span class="create-card__plus" aria-hidden="true">+</span>
+							<span class="create-card__title">Yeni Fikir Yazısı</span>
+							<span class="create-card__hint">src/content/yazilar/</span>
+						</button>
+						<button type="button" class="create-card" data-nav="new" data-collection="arastirmalar">
+							<span class="create-card__plus" aria-hidden="true">+</span>
+							<span class="create-card__title">Yeni Araştırma</span>
+							<span class="create-card__hint">Kaynakça bölümü açık gelir</span>
+						</button>
+						<button type="button" class="create-card" data-nav="new" data-collection="notlar">
+							<span class="create-card__plus" aria-hidden="true">+</span>
+							<span class="create-card__title">Yeni Not</span>
+							<span class="create-card__hint">src/content/notlar/</span>
+						</button>
+					</div>
+
+					<div class="filters" id="filters" role="tablist" aria-label="İçerik filtresi">
+						<button type="button" role="tab" data-filter="all">Tümü</button>
+						<button type="button" role="tab" data-filter="yazilar">Fikirler</button>
+						<button type="button" role="tab" data-filter="arastirmalar">Araştırmalar</button>
+						<button type="button" role="tab" data-filter="notlar">Notlar</button>
+						<button type="button" role="tab" data-filter="draft">Taslaklar</button>
+					</div>
+
+					<div id="list-problems" class="notice notice--warn" hidden></div>
+					<div id="content-list" class="table-wrap"></div>
+				</section>
+
+				<!-- DÜZENLEYİCİ -->
+				<section class="view" data-view="editor" hidden>
+					<header class="view__head view__head--row">
+						<div>
+							<h1 id="editor-title">Yeni içerik</h1>
+							<p class="muted" id="editor-path"></p>
+						</div>
+						<div class="view__actions">
+							<button type="button" class="btn btn--ghost" data-nav="list">Listeye dön</button>
+							<button type="button" class="btn btn--ghost" id="btn-site-preview">Sitede Önizle</button>
+							<button type="button" class="btn btn--primary" id="btn-save">Kaydet</button>
+						</div>
+					</header>
+
+					<div id="editor-message" class="notice" hidden></div>
+
+					<div class="editor-grid">
+						<div class="editor-main">
+							<div class="field">
+								<label for="f-title">Başlık</label>
+								<input type="text" id="f-title" autocomplete="off" />
+							</div>
+
+							<div class="field">
+								<label for="f-description">Kısa açıklama</label>
+								<textarea id="f-description" rows="2"></textarea>
+								<p class="hint">Listelerde ve arama sonuçlarında görünür. Şema bu alanı zorunlu tutuyor.</p>
+							</div>
+
+							<div class="editor-toolbar" id="toolbar">
+								<button type="button" data-md="h2" title="İkinci düzey başlık">H2</button>
+								<button type="button" data-md="h3" title="Üçüncü düzey başlık">H3</button>
+								<span class="sep" aria-hidden="true"></span>
+								<button type="button" data-md="bold" title="Kalın"><b>K</b></button>
+								<button type="button" data-md="italic" title="İtalik"><i>İ</i></button>
+								<button type="button" data-md="code" title="Kod">&lt;/&gt;</button>
+								<span class="sep" aria-hidden="true"></span>
+								<button type="button" data-md="quote" title="Alıntı">&rdquo;</button>
+								<button type="button" data-md="ul" title="Madde listesi">•—</button>
+								<button type="button" data-md="ol" title="Numaralı liste">1.</button>
+								<span class="sep" aria-hidden="true"></span>
+								<button type="button" data-md="link" title="Link">Link</button>
+								<button type="button" data-md="image" title="Görsel">Görsel</button>
+								<button type="button" data-md="table" title="Tablo">Tablo</button>
+								<button type="button" data-md="hr" title="Yatay çizgi">―</button>
+								<button type="button" data-md="footnote" title="Dipnot ekle">Dipnot</button>
+								<span class="spacer"></span>
+								<div class="tabs" role="tablist" aria-label="Editör görünümü">
+									<button type="button" role="tab" data-pane="write" aria-selected="true">Yaz</button>
+									<button type="button" role="tab" data-pane="preview" aria-selected="false">Önizle</button>
+								</div>
+							</div>
+
+							<div class="editor-panes">
+								<div id="pane-write"><textarea id="f-body"></textarea></div>
+								<div id="pane-preview" hidden>
+									<iframe id="preview-frame" title="Önizleme"></iframe>
+								</div>
+							</div>
+
+							<section class="card" id="sources-card">
+								<header class="card__head">
+									<h2>Kaynaklar</h2>
+									<button type="button" class="btn btn--sm" id="btn-add-source">+ Kaynak Ekle</button>
+								</header>
+								<p class="hint">
+									Her kaynağın bir anahtarı olur (örnek: <code>tuik2026</code>). Metinde
+									<code>[^tuik2026]</code> yazan her yer aynı kaynağa bağlanır ve kaynakçada tek kez görünür.
+								</p>
+								<div id="sources-warn" class="notice notice--warn" hidden></div>
+								<div id="sources-list" class="sources"></div>
+							</section>
+						</div>
+
+						<aside class="editor-side">
+							<div class="field">
+								<label for="f-slug">Dosya adı (slug)</label>
+								<input type="text" id="f-slug" autocomplete="off" spellcheck="false" />
+								<p class="hint" id="slug-hint"></p>
+							</div>
+
+							<div class="field">
+								<label for="f-date">Yayın tarihi</label>
+								<input type="date" id="f-date" />
+							</div>
+
+							<div class="field">
+								<label for="f-updated">Son güncelleme tarihi <span class="muted">(seçimlik)</span></label>
+								<input type="date" id="f-updated" />
+							</div>
+
+							<div class="field">
+								<label for="f-tag-input">Etiketler</label>
+								<div class="chips" id="tag-chips"></div>
+								<input type="text" id="f-tag-input" placeholder="Etiket yaz, ENTER'a bas" autocomplete="off" />
+								<datalist id="tag-options"></datalist>
+							</div>
+
+							<div class="field field--toggles">
+								<label class="toggle">
+									<input type="checkbox" id="f-draft" />
+									<span>Taslak olarak kaydet</span>
+								</label>
+								<label class="toggle">
+									<input type="checkbox" id="f-featured" />
+									<span>Ana sayfada öne çıkar</span>
+								</label>
+							</div>
+
+							<div class="field">
+								<label>Kapak görseli</label>
+								<div class="cover" id="cover"></div>
+								<div class="cover__actions">
+									<button type="button" class="btn btn--sm" id="btn-pick-file">Kapak Görseli Seç</button>
+									<button type="button" class="btn btn--sm btn--ghost" id="btn-pick-media">Mevcut görseller</button>
+									<button type="button" class="btn btn--sm btn--ghost" id="btn-clear-image" hidden>Kaldır</button>
+								</div>
+								<input type="file" id="f-file" accept=".jpg,.jpeg,.png,.webp" hidden />
+								<div class="media-picker" id="media-picker" hidden></div>
+							</div>
+
+							<div class="field" id="image-alt-field" hidden>
+								<label for="f-image-alt">Görsel açıklaması / ALT metni</label>
+								<input type="text" id="f-image-alt" autocomplete="off" />
+							</div>
+						</aside>
+					</div>
+				</section>
+
+				<!-- MEDYA -->
+				<section class="view" data-view="media" hidden>
+					<header class="view__head view__head--row">
+						<div>
+							<h1>Medya</h1>
+							<p class="muted"><code>public/images/</code> klasöründeki görseller.</p>
+						</div>
+						<div class="view__actions">
+							<button type="button" class="btn btn--primary" id="btn-media-upload">Görsel Yükle</button>
+							<input type="file" id="media-file" accept=".jpg,.jpeg,.png,.webp" hidden />
+						</div>
+					</header>
+					<div id="media-message" class="notice" hidden></div>
+					<div class="media-grid" id="media-grid"></div>
+				</section>
+
+				<!-- GITHUB -->
+				<section class="view" data-view="git" hidden>
+					<header class="view__head">
+						<h1>Değişiklikleri GitHub'a Gönder</h1>
+						<p class="muted">
+							Önce gönderilecek dosyalar listelenir. Hiçbir şey senin açık onayın olmadan gönderilmez.
+						</p>
+					</header>
+					<div id="git-message" class="notice" hidden></div>
+					<div id="git-status" class="card"></div>
+					<div class="card">
+						<div class="field">
+							<label for="f-commit">Commit mesajı</label>
+							<input type="text" id="f-commit" placeholder="Örnek: yeni araştırma yazısı eklendi" />
+						</div>
+						<button type="button" class="btn btn--primary" id="btn-git-push">Gönder</button>
+						<p class="hint">
+							Sırayla <code>git add</code>, <code>git commit</code> ve <code>git push</code> çalışır.
+							Panel force push yapmaz ve git geçmişini değiştirmez.
+						</p>
+					</div>
+					<pre id="git-output" class="output" hidden></pre>
+				</section>
+			</main>
+		</div>
+
+		<div class="dialog" id="dialog" hidden>
+			<div class="dialog__box" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+				<h2 id="dialog-title"></h2>
+				<div id="dialog-body"></div>
+				<div class="dialog__actions">
+					<button type="button" class="btn btn--ghost" id="dialog-cancel">Vazgeç</button>
+					<button type="button" class="btn btn--danger" id="dialog-confirm">Onayla</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="toast" id="toast" hidden></div>
+
+		<script src="/vendor/codemirror.js"></script>
+		<script src="/vendor/xml.js"></script>
+		<script src="/vendor/meta.js"></script>
+		<script src="/vendor/markdown.js"></script>
+		<script src="/vendor/continuelist.js"></script>
+		<script src="/admin.js" type="module"></script>
+	</body>
+</html>

@@ -6,7 +6,7 @@ import mdx from '@astrojs/mdx';
 import { satteri } from '@astrojs/markdown-satteri';
 
 import { SITE_URL } from './src/site.config.ts';
-import { externalLinksPlugin, tableWrapPlugin } from './src/markdown/plugins.ts';
+import { markdownFeatures, markdownHastPlugins } from './src/markdown/plugins.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -31,19 +31,11 @@ export default defineConfig({
 	],
 
 	markdown: {
+		// Özellikler ve eklentiler src/markdown/plugins.ts içinde tanımlıdır;
+		// yerel yönetim panelinin önizlemesi de aynı dosyayı kullanır.
 		processor: satteri({
-			features: {
-				smartPunctuation: true,
-				gfm: {
-					// Dipnot bölümünün Türkçe başlığı ve "metne dön" bağlantısı.
-					footnotes: {
-						label: 'Kaynakça',
-						backContent: '↩',
-						backLabel: '{reference} numaralı dipnotun metindeki yerine dön',
-					},
-				},
-			},
-			hastPlugins: [externalLinksPlugin, tableWrapPlugin],
+			features: markdownFeatures,
+			hastPlugins: markdownHastPlugins,
 		}),
 	},
 });

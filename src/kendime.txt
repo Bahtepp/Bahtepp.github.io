@@ -1,0 +1,37 @@
+yönetim paneli npm run admin Tarayıcıda http://localhost:3000 açılır.
+Siteyi de aynı anda görmek için:
+
+npm run edit
+Blog: http://localhost:4321
+Yönetim: http://localhost:3000
+3000 meşgulse panel sonraki portu dener ve adresi terminale yazar.
+
+Yeni yazı nasıl oluştururum?
+Ana ekranda + Yeni Fikir Yazısı, + Yeni Araştırma veya + Yeni Not seç. Başlık ve kısa açıklamayı yaz; dosya adı başlıktan otomatik gelir. Kaydettiğinde dosya doğru klasöre yazılır:
+
+Fikir → src/content/yazilar/
+Araştırma → src/content/arastirmalar/
+Not → src/content/notlar/
+Yeni içerik varsayılan olarak taslak kaydedilir.
+
+Araştırmaya kaynak nasıl eklerim?
+Araştırma formunda Kaynaklar bölümü açık gelir.
+
++ Kaynak Ekle
+Anahtar yaz (tuik2026 gibi)
+Yazar, başlık, yıl, URL doldur
+İmleci metne koy, Dipnot Ekle
+Metne [^tuik2026] eklenir. Kaydederken dipnot tanımı dosyanın sonuna bir kez yazılır; aynı kaynağı birkaç yerde kullansan kaynakçada tek satır olur.
+
+Görsel nasıl yüklerim?
+Kapak için Kapak Görseli Seç (.jpg / .png / .webp) veya Mevcut görseller. ALT metnini yaz, kaydet. Görsel public/images/ altına güvenli bir adla kopyalanır, frontmatter’a image: "/images/..." yazılır.
+
+Metin içi görsel için editördeki Görsel düğmesi veya soldaki Medya sayfası.
+
+Nasıl yayınlarım?
+Listede Yayınla (draft: false) veya Taslağa Al. Aynı kutular formda da var. Taslaklar yerelde görünür, yayınlanan sitede görünmez. Siteye yansıması için GitHub’a göndermen gerekir.
+
+GitHub’a nasıl gönderirim?
+Soldaki GitHub sayfası değişen dosyaları listeler. Commit mesajını yaz, Gönder, onayla. Sırayla git add, git commit, git push çalışır. Force push yok, şifre saklanmaz.
+
+Ayrıntılar README.md içinde: 3. Yerel İçerik Yönetim Paneli.

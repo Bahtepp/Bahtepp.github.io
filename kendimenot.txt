@@ -1,0 +1,31 @@
+Yönetim panelini nasıl açarım?
+Bu klasörde:
+
+npm run admin
+Tarayıcıda http://localhost:3000 açılır. Yalnızca senin bilgisayarında dinler.
+
+Siteyi de aynı anda görmek için:
+
+
+npm run edit
+Blog: http://localhost:4321
+Yönetim: http://localhost:3000
+3000 meşgulse panel sonraki portu dener ve adresi terminale yazar.
+
+Yeni yazı nasıl oluştururum?
+Ana ekranda + Yeni Fikir Yazısı, + Yeni Araştırma veya + Yeni Not seç. Başlık ve kısa açıklamayı yaz; dosya adı başlıktan otomatik gelir. Kaydettiğinde dosya doğru klasöre yazılır:
+
+Fikir → src/content/yazilar/
+Araştırma → src/content/arastirmalar/
+Not → src/content/notlar/
+Yeni içerik varsayılan olarak taslak kaydedilir.
+
+Araştırmaya kaynak nasıl eklerim?
+Araştırma formunda Kaynaklar bölümü açık gelir.
+
++ Kaynak Ekle
+Anahtar yaz (tuik2026 gibi)
+Yazar, başlık, yıl, URL doldur
+İmleci metne koy, Dipnot Ekle
+Metne [^tuik2026] eklenir. Kaydederken dipnot tanımı dosyanın sonuna bir kez yazılır; aynı kaynağı birkaç yerde kullansan kaynakçada tek satır olur.
+

@@ -1,4 +1,5 @@
 import { defineHastPlugin } from 'satteri';
+import type { SatteriFeatures } from '@astrojs/markdown-satteri';
 
 /**
  * Dış bağlantıları yeni sekmede ve `rel="noopener noreferrer"` ile açar.
@@ -36,3 +37,23 @@ export const tableWrapPlugin = defineHastPlugin({
 		},
 	},
 });
+
+/**
+ * Markdown özellikleri tek yerde tutulur, böylece hem site build'i
+ * (astro.config.mjs) hem yerel yönetim panelinin önizlemesi aynı
+ * kuralları kullanır ve dipnot başlıkları birbirinden ayrı düşmez.
+ */
+export const markdownFeatures: SatteriFeatures = {
+	smartPunctuation: true,
+	gfm: {
+		// Dipnot bölümünün Türkçe başlığı ve "metne dön" bağlantısı.
+		footnotes: {
+			label: 'Kaynakça',
+			backContent: '↩',
+			backLabel: '{reference} numaralı dipnotun metindeki yerine dön',
+		},
+	},
+};
+
+/** Site ve önizlemenin paylaştığı hast eklentileri. */
+export const markdownHastPlugins = [externalLinksPlugin, tableWrapPlugin];

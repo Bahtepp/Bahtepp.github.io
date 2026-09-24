@@ -12,20 +12,21 @@ aşağıdaki başlıklardan ihtiyacın olana atlayabilirsin.
 
 1. [Site nasıl çalışıyor?](#1-site-nasıl-çalışıyor)
 2. [Günlük kullanacağın komutlar](#2-günlük-kullanacağın-komutlar)
-3. [Yeni yazı nasıl eklenir?](#3-yeni-yazı-nasıl-eklenir)
-4. [Frontmatter alanları](#4-frontmatter-alanları)
-5. [Markdown nasıl kullanılır?](#5-markdown-nasıl-kullanılır)
-6. [Kaynak ve dipnot nasıl eklenir?](#6-kaynak-ve-dipnot-nasıl-eklenir)
-7. [Görsel nasıl eklenir?](#7-görsel-nasıl-eklenir)
-8. [Etiketler](#8-etiketler)
-9. [Taslak saklamak ve yayınlamak](#9-taslak-saklamak-ve-yayınlamak)
-10. [Site bilgilerini değiştirmek](#10-site-bilgilerini-değiştirmek)
-11. [Hakkımda sayfası ve profil fotoğrafı](#11-hakkımda-sayfası-ve-profil-fotoğrafı)
-12. [Siteyi GitHub'a göndermek](#12-siteyi-githuba-göndermek)
-13. [GitHub Pages nasıl çalışıyor?](#13-github-pages-nasıl-çalışıyor)
-14. [bahtep.com alan adını bağlamak](#14-bahtepcom-alan-adını-bağlamak)
-15. [Klasör yapısı](#15-klasör-yapısı)
-16. [Sorun giderme](#16-sorun-giderme)
+3. [Yerel İçerik Yönetim Paneli](#3-yerel-içerik-yönetim-paneli)
+4. [Yeni yazı nasıl eklenir?](#4-yeni-yazı-nasıl-eklenir)
+5. [Frontmatter alanları](#5-frontmatter-alanları)
+6. [Markdown nasıl kullanılır?](#6-markdown-nasıl-kullanılır)
+7. [Kaynak ve dipnot nasıl eklenir?](#7-kaynak-ve-dipnot-nasıl-eklenir)
+8. [Görsel nasıl eklenir?](#8-görsel-nasıl-eklenir)
+9. [Etiketler](#9-etiketler)
+10. [Taslak saklamak ve yayınlamak](#10-taslak-saklamak-ve-yayınlamak)
+11. [Site bilgilerini değiştirmek](#11-site-bilgilerini-değiştirmek)
+12. [Hakkımda sayfası ve profil fotoğrafı](#12-hakkımda-sayfası-ve-profil-fotoğrafı)
+13. [Siteyi GitHub'a göndermek](#13-siteyi-githuba-göndermek)
+14. [GitHub Pages nasıl çalışıyor?](#14-github-pages-nasıl-çalışıyor)
+15. [bahtep.com alan adını bağlamak](#15-bahtepcom-alan-adını-bağlamak)
+16. [Klasör yapısı](#16-klasör-yapısı)
+17. [Sorun giderme](#17-sorun-giderme)
 
 ---
 
@@ -92,9 +93,125 @@ npm run preview
 > derleme sırasında oluşturulur. Aramayı denemek istersen önce `npm run build`, sonra
 > `npm run preview` çalıştır.
 
+**Yazı yazmak için yerel yönetim panelini açmak:**
+
+```bash
+npm run admin
+```
+
+Panel: **http://localhost:3000** — yalnızca senin bilgisayarında açılır, sitede yayınlanmaz.
+
+**Siteyi ve paneli birlikte açmak:**
+
+```bash
+npm run edit
+```
+
+- Blog: **http://localhost:4321**
+- Yönetim: **http://localhost:3000**
+
 ---
 
-## 3. Yeni yazı nasıl eklenir?
+## 3. Yerel İçerik Yönetim Paneli
+
+Markdown dosyalarını elle düzenlemek zorunda değilsin. Paneli kendi
+bilgisayarında açıp yazılarını oradan oluşturabilir, düzenleyebilir ve
+GitHub'a gönderebilirsin.
+
+**Bu panel sitede yayınlanmaz.** GitHub Pages'te `/admin` adresi yoktur.
+Yalnızca `127.0.0.1` üzerinde, kendi makinenizde çalışır.
+
+### Paneli açmak
+
+```bash
+npm run admin
+```
+
+Tarayıcıda **http://localhost:3000** adresini aç. 3000 meşgulse panel sıradaki
+boş portu dener ve adresi terminale yazar.
+
+Siteyi de aynı anda görmek istersen:
+
+```bash
+npm run edit
+```
+
+### Yeni yazı oluşturma
+
+1. Ana ekranda **+ Yeni Fikir Yazısı**, **+ Yeni Araştırma** veya **+ Yeni Not**
+   seç.
+2. Başlık ve kısa açıklamayı yaz. Dosya adı başlıktan otomatik oluşur; istersen
+   değiştir.
+3. Yayın tarihini, etiketleri, taslak ve öne çıkan kutularını doldur.
+4. Metni alttaki editöre yaz. Üstteki düğmelerle başlık, kalın, alıntı, liste,
+   link, tablo ve dipnot ekleyebilirsin.
+5. **Yaz / Önizle** sekmeleriyle metnin sitede nasıl görüneceğini kontrol et.
+6. **Kaydet**. Dosya doğru klasöre yazılır:
+   - Fikir → `src/content/yazilar/`
+   - Araştırma → `src/content/arastirmalar/`
+   - Not → `src/content/notlar/`
+
+### Araştırmaya kaynak ekleme
+
+Araştırma oluştururken **Kaynaklar** bölümü açık gelir.
+
+1. **+ Kaynak Ekle**
+2. Anahtar yaz (örnek: `tuik2026`)
+3. Yazar, çalışma adı, yıl, URL gibi alanları doldur
+4. İmleci metinde istediğin yere koy, **Dipnot Ekle**ye bas
+
+Metne `[^tuik2026]` eklenir. Kaydederken dipnot tanımı dosyanın **sonuna**
+otomatik yazılır. Aynı anahtarı birden fazla yerde kullanırsan kaynakçada
+tek satır görünür — sitenin mevcut dipnot sistemiyle aynıdır.
+
+### Görsel ekleme
+
+**Kapak görseli:**
+
+1. **Kapak Görseli Seç** ile bilgisayarından `.jpg`, `.jpeg`, `.png` veya
+   `.webp` seç, veya **Mevcut görseller** ile `public/images/` içinden seç
+2. ALT metnini yaz
+3. Kaydettiğinde görsel `public/images/` altına güvenli bir adla kopyalanır
+   ve frontmatter'a `image: "/images/..."` yazılır
+
+**Metin içi görsel:** editördeki **Görsel** düğmesi, mevcut görsellerden birini
+`![](/images/...)` olarak ekler. Yeni görsel yüklemek için soldaki **Medya**
+sayfasını kullan.
+
+### Taslak ve yayın
+
+Yeni içerik varsayılan olarak **taslak** kaydedilir. Taslaklar yerelde
+görünür, yayınlanan sitede görünmez.
+
+- Listede **Yayınla** → `draft: false`
+- **Taslağa Al** → `draft: true`
+
+Aynı kutular düzenleme formunda da vardır.
+
+### Mevcut yazıyı düzenleme
+
+Listeden **Düzenle**. Frontmatter ve metin forma dolar. Kaydettiğinde aynı
+dosya güncellenir. Dosya adını değiştirirsen dosya yeniden adlandırılır;
+başka bir dosyanın üzerine yazılmaz.
+
+**Önizle** veya düzenleyicide **Sitede Önizle**, Astro sunucusu açıksa
+`http://localhost:4321/...` adresini açar. Kapalıysa **Siteyi Başlat**
+diyebilirsin.
+
+### GitHub'a gönderme
+
+Soldaki **GitHub** sayfasında:
+
+1. Gönderilecek dosyalar listelenir
+2. Commit mesajını yaz
+3. **Gönder** ve onay penceresini kabul et
+
+Sırayla `git add`, `git commit`, `git push` çalışır. Panel force push yapmaz
+ve şifre saklamaz. GitHub girişi yoksa hatayı anlaşılır şekilde gösterir.
+
+---
+
+## 4. Yeni yazı nasıl eklenir?
 
 Her içerik türünün kendi klasörü var. Yeni bir yazı eklemek için **ilgili klasöre yeni bir
 `.md` dosyası** koyman yeterli. Başka hiçbir yeri düzenlemene gerek yoktur; listeler,
@@ -153,7 +270,7 @@ görünür. Kısa yazılar için uygundur.
 
 ---
 
-## 4. Frontmatter alanları
+## 5. Frontmatter alanları
 
 Her Markdown dosyasının en üstündeki iki `---` satırı arasındaki bölüme
 **frontmatter** denir. Yazının bilgilerini burada tutarsın.
@@ -196,7 +313,7 @@ imageAlt: "Görselin kısa açıklaması"
 
 ---
 
-## 5. Markdown nasıl kullanılır?
+## 6. Markdown nasıl kullanılır?
 
 Markdown, biçimlendirmeyi basit işaretlerle yapmanı sağlar.
 
@@ -288,7 +405,7 @@ console.log('merhaba');
 
 ---
 
-## 6. Kaynak ve dipnot nasıl eklenir?
+## 7. Kaynak ve dipnot nasıl eklenir?
 
 Bu, özellikle araştırma yazıları için hazırlandı.
 
@@ -337,7 +454,7 @@ dosyasında görebilirsin.
 
 ---
 
-## 7. Görsel nasıl eklenir?
+## 8. Görsel nasıl eklenir?
 
 **1. Adım —** Görsel dosyasını `public/images/` klasörüne kopyala.
 Örnek: `public/images/deniz.jpg`
@@ -373,7 +490,7 @@ kullanılır. **Boş bırakma.**
 
 ---
 
-## 8. Etiketler
+## 9. Etiketler
 
 Etiket eklemek için ayrı bir yer tanımlamana gerek yok. Frontmatter'a yazdığın anda
 etiket sayfası kendiliğinden oluşur:
@@ -397,7 +514,7 @@ listesi `/etiketler/` adresindedir.
 
 ---
 
-## 9. Taslak saklamak ve yayınlamak
+## 10. Taslak saklamak ve yayınlamak
 
 **Bir yazıyı taslak olarak saklamak** için frontmatter'a şunu ekle:
 
@@ -430,7 +547,7 @@ Birkaç dakika içinde site kendiliğinden güncellenir.
 
 ---
 
-## 10. Site bilgilerini değiştirmek
+## 11. Site bilgilerini değiştirmek
 
 Sitenin adı, açıklaması, yazar adı ve bağlantıları **tek bir dosyadan** yönetilir:
 
@@ -467,7 +584,7 @@ tanımlanır.
 
 ---
 
-## 11. Hakkımda sayfası ve profil fotoğrafı
+## 12. Hakkımda sayfası ve profil fotoğrafı
 
 **Biyografi metnini değiştirmek için:** `src/pages/hakkimda.astro` dosyasını aç.
 `<p>` ile `</p>` arasındaki yazıları kendi metninle değiştir. Yeni paragraf eklemek
@@ -489,7 +606,7 @@ profileImage: '/images/profil.jpg',
 
 ---
 
-## 12. Siteyi GitHub'a göndermek
+## 13. Siteyi GitHub'a göndermek
 
 Bu klasör zaten şu depoya bağlı: **https://github.com/Bahtepp/bahtepp.github.io**
 
@@ -520,7 +637,7 @@ git log --oneline   # geçmiş kayıtlar
 
 ---
 
-## 13. GitHub Pages nasıl çalışıyor?
+## 14. GitHub Pages nasıl çalışıyor?
 
 Depoya her gönderim yaptığında `.github/workflows/deploy.yml` dosyasındaki otomasyon
 çalışır ve şunları yapar:
@@ -541,7 +658,7 @@ hata mesajını okuyabilirsin.
 
 ---
 
-## 14. bahtep.com alan adını bağlamak
+## 15. bahtep.com alan adını bağlamak
 
 Alan adını satın aldığında üç adım var.
 
@@ -590,7 +707,7 @@ DNS değişikliklerinin yayılması bazen birkaç saat sürebilir.
 
 ---
 
-## 15. Klasör yapısı
+## 16. Klasör yapısı
 
 ```
 bahtep.com/
@@ -612,6 +729,7 @@ bahtep.com/
 │   ├── lib/                 ← okuma süresi, tarih, etiket hesaplamaları
 │   └── styles/
 │       └── global.css       ← RENKLER VE YAZI TİPLERİ BURADA
+├── tools/admin/             ← YEREL YÖNETİM PANELİ (sitede yayınlanmaz)
 ├── .github/workflows/
 │   └── deploy.yml           ← otomatik yayınlama
 ├── astro.config.mjs         ← Astro ayarları
@@ -623,7 +741,7 @@ Bunlar otomatik oluşur ve GitHub'a gönderilmez.
 
 ---
 
-## 16. Sorun giderme
+## 17. Sorun giderme
 
 **`npm run dev` çalışmıyor / "command not found" diyor**
 Node.js kurulu değil olabilir. [nodejs.org](https://nodejs.org) adresinden LTS sürümünü
@@ -648,6 +766,14 @@ Genelde frontmatter hatasıdır. Çoğu zaman sebebi şunlardan biridir:
 **Arama çalışmıyor**
 Arama dizini derleme sırasında oluşur. `npm run dev` sırasında çalışmaz; bu normaldir.
 Denemek için `npm run build` sonra `npm run preview` çalıştır.
+
+**Yönetim paneli açılmıyor / port meşgul**
+`3000` meşgulse panel sıradaki portu dener ve adresi terminale yazar. İstersen
+kendin seçebilirsin:
+
+```powershell
+$env:BAHTEP_ADMIN_PORT=3100; npm run admin
+```
 
 **Sitede Türkçe harfler bozuk görünüyor**
 Markdown dosyalarını UTF-8 kodlamasıyla kaydettiğinden emin ol (çoğu düzenleyici
