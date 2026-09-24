@@ -1,6 +1,6 @@
 ---
 title: "Türkiye Pazarında Popülerlik Kazanmış Elektrikli Otomobillerin kWh Tüketimi"
-description: "Elektrikli otomobil almayı düşünenleri bilinçlendirmek ve farkındalığı arttırmak üzere yapılmış bir araştırmadır."
+description: "Elektrikli otomobil almayı düşünenleri bilinçlendirmek ve farkındalığı artırmak üzere yapılmış bir araştırmadır."
 date: 2026-09-24
 category: "Araştırma"
 tags:
