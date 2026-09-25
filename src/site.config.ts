@@ -50,7 +50,6 @@ export const siteConfig = {
 	 * url http(s) veya mailto olabilir.
 	 */
 	links: [
-		{ label: 'GitHub', url: 'https://github.com/Bahtepp' },
 		{ label: 'instagram', url: 'https://www.instagram.com/bahtep/' },
 	],
 

@@ -33,14 +33,14 @@ Elektrikli otomobillerde de temel mantık bundan farklı değil. Daha büyük bi
 Benzinli ve dizel otomobillerde yıllardır “100 kilometrede kaç litre yakıyor?” diye soruyoruz. Elektrikli otomobilde bunun karşılığı:
 
 “100 kilometrede kaç kWh elektrik harcıyor?”
-sorusudur.
 
+sorusudur.
 
 Bu fark artık yalnızca teknik bir detay da değil. Türkiye'deki halka açık şarj istasyonlarında AC fiyatların ortancası yaklaşık 9,95 TL/kWh, DC hızlı şarj fiyatlarının ortancası ise 13,99 TL/kWh seviyesinde. DC tarifeleri operatöre göre yaklaşık 7,70 TL ile 16,49 TL/kWh arasında değişebiliyor.[^sarjradar]
 
 Bu nedenle yüksek tüketimli bir elektrikli otomobil, özellikle ev yerine halka açık hızlı şarj istasyonlarında kullanılıyorsa kilometre başına maliyet açısından beklenenden çok daha pahalı hale gelebiliyor.
 
-Aynı Elektrik, Çok Farklı Tüketim
+### Aynı Elektrik, Çok Farklı Tüketim
 
 Türkiye pazarında bilinen üç elektrikli SUV'un yüksek tüketimli versiyonlarını, verimlilik tarafında referans olması amacıyla Tesla Model Y RWD ile karşılaştırdığımızda fark daha net ortaya çıkıyor.
 
@@ -68,7 +68,7 @@ Fakat tam olarak anlatmak istediğim mesele de burada ortaya çıkıyor:
 
 Tüketici bütün bunların karşılığında ne kadar enerji harcadığını da bilmeli.
 
-Menzil Tek Başına Verimlilik Değildir
+### Menzil Tek Başına Verimlilik Değildir
 
 T10X AWD'nin 88,5 kWh gibi büyük bir bataryayla 468 km WLTP karma menzil sunması ile Model Y RWD'nin 13,1 kWh/100 km seviyesindeki enerji tüketimi aynı şeyi anlatmıyor.[^toggtech][^teslatuketim]
 
@@ -94,8 +94,6 @@ Bu nedenle “1.000 kilometre menzil” tek başına “çok verimli otomobil”
 
 ### T10X Örneğinde Tüketimin Karşılığında Ne Alıyoruz?
 
-
-
 Togg T10X'i yalnızca 21,9 kWh/100 km tüketim değerine bakarak değerlendirmek de eksik olur.
 
 AWD model 435 bg güç ve 700 Nm tork üretiyor, 0-100 km/s hızlanmasını 4,8 saniyede gerçekleştiriyor. 2.890 mm aks mesafesi sayesinde oldukça geniş bir kabine sahip ve Togg'un resmî kataloğunda ısıtmalı ön ve arka koltuklar, elektrikli ve hafızalı ön koltuklar, geniş ekran sistemi ve Meridian ses sistemi gibi konfor özellikleri bulunuyor.[^toggtech]
@@ -116,7 +114,7 @@ Asıl mesele tüketim rakamının menzil kadar görünür hale gelmesi.
 
 Aynı durum Torres EVX ve Countryman SE ALL4 için de geçerli. Torres'in büyük iç hacmi ve bagajı, MINI'nin ise 313 bg dört çeker performansı tüketimin değerlendirilmesinde hesaba katılmalı.[^kgmtech][^minitech]
 
-Batarya Garantisi de Yalnızca “Kaç Yıl?” Diye Okunmamalı
+### Batarya Garantisi de Yalnızca “Kaç Yıl?” Diye Okunmamalı
 
 Elektrikli otomobil satın alırken benzer bir durum batarya garantisinde yaşanıyor.
 
@@ -142,7 +140,7 @@ sorusu olmalı.
 
 Bu nedenle elektrikli otomobil satın alırken garanti süresi kadar kapasite kaybının hangi şartlarda garanti kapsamına girdiğinin de yazılı garanti belgesinden kontrol edilmesi gerekiyor.
 
-Elektrikli Otomobil Ekonomik Olabilir, Ama Her Elektrikli Otomobil Aynı Derecede Ekonomik Değildir
+### Elektrikli Otomobil Ekonomik Olabilir, Ama Her Elektrikli Otomobil Aynı Derecede Ekonomik Değildir
 
 Elektrikli otomobillerin içten yanmalı araçlara göre önemli avantajları var. Elektrik motorunun yüksek verimliliği, rejeneratif frenleme, daha az hareketli mekanik parça ve evde şarj imkânı bunların başında geliyor.
 
