@@ -146,6 +146,15 @@
 
 						<aside class="editor-side">
 							<div class="field">
+								<label for="f-collection">Tür</label>
+								<select id="f-collection">
+									<option value="yazilar">Fikir</option>
+									<option value="arastirmalar">Araştırma</option>
+									<option value="notlar">Not</option>
+								</select>
+							</div>
+
+							<div class="field">
 								<label for="f-slug">Dosya adı (slug)</label>
 								<input type="text" id="f-slug" autocomplete="off" spellcheck="false" />
 								<p class="hint" id="slug-hint"></p>
@@ -153,7 +162,8 @@
 
 							<div class="field">
 								<label for="f-date">Yayın tarihi</label>
-								<input type="date" id="f-date" />
+								<input type="date" id="f-date" readonly />
+								<p class="hint" id="date-hint">İlk kez yayınlandığında otomatik yazılır; sonradan değişmez.</p>
 							</div>
 
 							<div class="field">
@@ -173,9 +183,13 @@
 									<input type="checkbox" id="f-draft" />
 									<span>Taslak olarak kaydet</span>
 								</label>
+							</div>
+
+							<div class="field">
+								<label for="f-featured">Öne Çıkan</label>
 								<label class="toggle">
 									<input type="checkbox" id="f-featured" />
-									<span>Ana sayfada öne çıkar</span>
+									<span id="featured-state">Kapalı</span>
 								</label>
 							</div>
 

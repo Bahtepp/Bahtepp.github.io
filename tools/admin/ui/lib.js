@@ -134,7 +134,12 @@ export function slugify(text) {
 }
 
 /** 2026-09-24 -> 24 Eylül 2026 */
-const trDate = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const trDate = new Intl.DateTimeFormat('tr-TR', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'Europe/Istanbul',
+});
 
 export function formatDate(value) {
 	if (!value) return '—';

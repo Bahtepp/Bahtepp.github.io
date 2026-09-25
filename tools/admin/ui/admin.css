@@ -439,6 +439,7 @@ tbody tr:hover {
 
 input[type='text'],
 input[type='date'],
+select,
 textarea {
 	width: 100%;
 	font: inherit;
@@ -455,7 +456,18 @@ textarea {
 	padding: 0.55rem 0.6rem;
 }
 
+select {
+	appearance: auto;
+	cursor: pointer;
+}
+
+input[readonly] {
+	background: var(--bg-subtle);
+	cursor: default;
+}
+
 input:focus-visible,
+select:focus-visible,
 textarea:focus-visible,
 button:focus-visible {
 	outline: 2px solid var(--accent);

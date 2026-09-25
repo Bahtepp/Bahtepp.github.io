@@ -1,8 +1,13 @@
 ---
-title: "SOSYAL MEDYANIN KADIN ERKEK İLİŞKİLERİNE ETKİSİ"
+title: "Sosyal Medyanın Kadın Erkek İlişkilerine Etkisi"
 description: "Sosyal medyadan çok problemli algoritma yani problemli kullanım negatif etki ediyor!"
 date: 2026-09-24
-category: "Fikir"
+publishedAt: 2026-09-24
+category: "Araştırma"
+tags:
+  - cinsiyet
+  - "sosyal medya"
+  - yalnızlık
 draft: false
 featured: false
 image: "/images/0isdrrtokxeaav1a7ef63bz4o4qoypv8kwifgkyl.jpeg"

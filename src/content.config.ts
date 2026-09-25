@@ -15,6 +15,8 @@ const baseSchema = z.object({
 	description: z.string(),
 	/** Yayın tarihi, örn. 2026-09-24. Zorunlu. */
 	date: z.coerce.date(),
+	/** İlk yayın anı. Varsa sonraki kayıtlarda `date` bununla kilitlenir. */
+	publishedAt: z.coerce.date().optional(),
 	/** Sonradan güncellediysen güncelleme tarihi. */
 	updatedDate: z.coerce.date().optional(),
 	/** Etiketler. Küçük harf ve tire ile yazılması önerilir. */

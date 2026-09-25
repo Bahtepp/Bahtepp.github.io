@@ -29,6 +29,7 @@ import {
 	joinFootnoteDefinitions,
 	parseFile,
 	requireDateString,
+	resolvePublishDates,
 	serializeFile,
 	splitFootnoteDefinitions,
 	toDateString,
@@ -70,6 +71,7 @@ function summarize(collectionKey, fileName, data, stat) {
 		title: typeof data.title === 'string' ? data.title : '(başlıksız)',
 		description: typeof data.description === 'string' ? data.description : '',
 		date: toDateString(data.date),
+		publishedAt: toDateString(data.publishedAt),
 		updatedDate: toDateString(data.updatedDate),
 		tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
 		draft: data.draft === true,
@@ -136,6 +138,7 @@ export async function readEntry(collectionKey, slug) {
 		title: typeof data.title === 'string' ? data.title : '',
 		description: typeof data.description === 'string' ? data.description : '',
 		date: toDateString(data.date),
+		publishedAt: toDateString(data.publishedAt),
 		updatedDate: toDateString(data.updatedDate),
 		tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
 		draft: data.draft === true,
@@ -155,6 +158,8 @@ function buildFrontmatter(original, input) {
 	data.title = input.title;
 	data.description = input.description;
 	data.date = input.date;
+	if (input.publishedAt) data.publishedAt = input.publishedAt;
+	else delete data.publishedAt;
 	data.draft = input.draft;
 	data.featured = input.featured;
 
@@ -200,7 +205,6 @@ function normalizeInput(payload) {
 	return {
 		title,
 		description,
-		date: requireDateString(payload?.date, 'Yayın tarihi'),
 		updatedDate: payload?.updatedDate ? requireDateString(payload.updatedDate, 'Son güncelleme tarihi') : '',
 		tags,
 		draft: payload?.draft === true,
@@ -224,16 +228,25 @@ export async function saveEntry(payload) {
 	const isUpdate = Boolean(payload?.originalSlug);
 	let original = {};
 	let originalFile = null;
+	let originalCollectionKey = collection.key;
 
 	if (isUpdate) {
 		const originalSlug = requireSlug(payload.originalSlug);
-		originalFile = await findExistingFile(collection.key, originalSlug);
+		originalCollectionKey = payload.originalCollection
+			? requireCollection(payload.originalCollection).key
+			: collection.key;
+		originalFile = await findExistingFile(originalCollectionKey, originalSlug);
 		if (!originalFile) {
 			throw new AdminError('Güncellenecek içerik bulunamadı.', 404);
 		}
 		const raw = await fs.readFile(originalFile.filePath, 'utf8');
 		original = parseFile(raw).data;
 	}
+
+	const dates = resolvePublishDates(original, {
+		isUpdate,
+		publishing: input.draft === false,
+	});
 
 	// Görsel seçildiyse önce public/images içine kopyalanır.
 	let imagePath = input.image;
@@ -242,8 +255,9 @@ export async function saveEntry(payload) {
 		imagePath = saved.path;
 	}
 
-	const data = buildFrontmatter(original, { ...input, image: imagePath });
-	if (!Object.hasOwn(data, 'category')) {
+	const data = buildFrontmatter(original, { ...input, ...dates, image: imagePath });
+	const collectionChanged = isUpdate && originalCollectionKey !== collection.key;
+	if (!Object.hasOwn(data, 'category') || collectionChanged) {
 		data.category = collection.badge;
 	}
 	const body = joinFootnoteDefinitions(input.body, input.footnotes);
@@ -277,12 +291,21 @@ export async function saveEntry(payload) {
 		await fs.writeFile(targetPath, contents, 'utf8');
 	}
 
+	if (data.featured === true) {
+		await clearOtherFeatured(collection.key, targetSlug);
+	}
+
 	return {
 		collection: collection.key,
 		slug: targetSlug,
 		renamedFrom: isRename ? path.basename(originalFile.filePath) : null,
+		movedFrom: collectionChanged ? originalCollectionKey : null,
 		image: imagePath,
 		url: `${collection.urlBase}/${targetSlug}/`,
+		date: data.date,
+		publishedAt: data.publishedAt ?? '',
+		draft: data.draft === true,
+		featured: data.featured === true,
 	};
 }
 
@@ -295,9 +318,37 @@ export async function setDraft(collectionKey, slug, draft) {
 
 	const raw = await fs.readFile(found.filePath, 'utf8');
 	const { data, body } = parseFile(raw);
+	const dates = resolvePublishDates(data, { isUpdate: true, publishing: draft === false });
+	data.date = dates.date;
+	if (dates.publishedAt) data.publishedAt = dates.publishedAt;
+	else delete data.publishedAt;
 	data.draft = draft === true;
 	await fs.writeFile(found.filePath, serializeFile(data, body), 'utf8');
-	return { collection: collectionKey, slug: safeSlug, draft: data.draft };
+	return {
+		collection: collectionKey,
+		slug: safeSlug,
+		draft: data.draft,
+		date: data.date,
+		publishedAt: data.publishedAt ?? '',
+	};
+}
+
+/** Ana sayfa tek öne çıkan kart gösterdiği için yeni seçimde diğerleri kapanır. */
+async function clearOtherFeatured(keepCollection, keepSlug) {
+	const { items } = await listContent();
+	for (const item of items) {
+		if (!item.featured) continue;
+		if (item.collection === keepCollection && item.slug === keepSlug) continue;
+
+		const found = await findExistingFile(item.collection, item.slug);
+		if (!found) continue;
+
+		const raw = await fs.readFile(found.filePath, 'utf8');
+		const parsed = parseFile(raw);
+		if (parsed.data.featured !== true) continue;
+		parsed.data.featured = false;
+		await fs.writeFile(found.filePath, serializeFile(parsed.data, parsed.body), 'utf8');
+	}
 }
 
 /**

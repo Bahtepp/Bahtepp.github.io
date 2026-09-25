@@ -199,11 +199,13 @@ function renderList() {
 				? formatDate(item.updatedDate)
 				: `<span class="muted">${esc(formatDate(item.modified))}</span>`;
 			const attrs = `data-collection="${esc(item.collection)}" data-slug="${esc(item.slug)}"`;
+			const publishedLabel =
+				item.publishedAt || !item.draft ? formatDate(item.publishedAt || item.date) : '—';
 
 			return `<tr>
 				<td class="cell-title">${esc(item.title)}<small>${esc(item.fileName)}</small></td>
 				<td><span class="badge">${esc(item.badge)}</span></td>
-				<td>${esc(formatDate(item.date))}</td>
+				<td>${esc(publishedLabel)}</td>
 				<td>${status}${featured}</td>
 				<td>${updated}</td>
 				<td>
@@ -264,7 +266,9 @@ async function deleteFlow(collection, slug, title) {
 function emptyForm(collection) {
 	return {
 		collection,
+		originalCollection: null,
 		originalSlug: null,
+		ext: '.md',
 		slugTouched: false,
 		tags: [],
 		sources: [],
@@ -313,6 +317,13 @@ function ensureEditorBindings() {
 		state.form.slugTouched = true;
 		updateSlugHint();
 	});
+
+	$('#f-collection').addEventListener('change', (event) => {
+		state.form.collection = event.target.value;
+		syncCollectionUi();
+	});
+
+	$('#f-featured').addEventListener('change', syncFeaturedState);
 
 	$('#btn-save').addEventListener('click', () => saveEntry());
 	$('#btn-site-preview').addEventListener('click', () => {
@@ -367,7 +378,8 @@ async function openEditor({ collection, slug }) {
 			slug: '',
 			title: '',
 			description: '',
-			date: state.boot.today,
+			date: '',
+			publishedAt: '',
 			updatedDate: '',
 			tags: [],
 			draft: true,
@@ -388,7 +400,9 @@ async function openEditor({ collection, slug }) {
 function fillForm(entry) {
 	const form = state.form;
 	form.collection = entry.collection;
+	form.originalCollection = entry.slug ? entry.collection : null;
 	form.originalSlug = entry.slug || null;
+	form.ext = entry.ext ?? '.md';
 	form.slugTouched = Boolean(entry.slug);
 	form.tags = [...(entry.tags ?? [])];
 	form.image = entry.image ?? '';
@@ -404,14 +418,12 @@ function fillForm(entry) {
 
 	const meta = collectionOf(entry.collection);
 	$('#editor-title').textContent = entry.slug ? entry.title || '(başlıksız)' : `Yeni ${meta.singular}`;
-	$('#editor-path').textContent = entry.slug
-		? `src/content/${entry.collection}/${entry.slug}${entry.ext ?? '.md'}`
-		: `Kaydedildiğinde src/content/${entry.collection}/ içine yazılacak.`;
 
 	$('#f-title').value = entry.title ?? '';
 	$('#f-description').value = entry.description ?? '';
+	$('#f-collection').value = entry.collection;
 	$('#f-slug').value = entry.slug ?? '';
-	$('#f-date').value = entry.date || state.boot.today;
+	$('#f-date').value = entry.publishedAt || (!entry.draft && entry.date) || '';
 	$('#f-updated').value = entry.updatedDate ?? '';
 	$('#f-draft').checked = entry.draft === true;
 	$('#f-featured').checked = entry.featured === true;
@@ -420,14 +432,28 @@ function fillForm(entry) {
 	state.cm.clearHistory();
 
 	$('#btn-site-preview').hidden = !entry.slug;
-	// Kaynakça bölümü araştırmalarda açık gelir. Diğer türlerde yalnızca dosyada
-	// zaten dipnot varsa gösterilir; böylece var olan kaynaklar gözden kaçmaz.
-	$('#sources-card').hidden = entry.collection !== 'arastirmalar' && form.sources.length === 0;
 
 	renderTags();
 	renderCover();
 	renderSources();
+	syncCollectionUi();
+	syncFeaturedState();
+}
+
+function syncCollectionUi() {
+	const form = state.form;
+	const meta = collectionOf(form.collection);
+	$('#editor-path').textContent = form.originalSlug
+		? `src/content/${form.collection}/${form.originalSlug}${form.ext ?? '.md'}`
+		: `Kaydedildiğinde src/content/${form.collection}/ içine yazılacak.`;
+	// Kaynakça bölümü araştırmalarda açık gelir. Diğer türlerde yalnızca dosyada
+	// zaten dipnot varsa gösterilir; böylece var olan kaynaklar gözden kaçmaz.
+	$('#sources-card').hidden = form.collection !== 'arastirmalar' && form.sources.length === 0;
 	updateSlugHint();
+}
+
+function syncFeaturedState() {
+	$('#featured-state').textContent = $('#f-featured').checked ? 'Açık' : 'Kapalı';
 }
 
 function updateSlugHint() {
@@ -437,7 +463,7 @@ function updateSlugHint() {
 		(item) =>
 			item.collection === state.form.collection &&
 			item.slug === slug &&
-			item.slug !== state.form.originalSlug,
+			!(item.collection === state.form.originalCollection && item.slug === state.form.originalSlug),
 	);
 	$('#slug-hint').innerHTML = slug
 		? `Adres: <code>${esc(meta.urlBase)}/${esc(slug)}/</code>${
@@ -1015,11 +1041,11 @@ async function saveEntry() {
 	try {
 		const result = await api('/api/save', {
 			collection: form.collection,
+			originalCollection: form.originalCollection,
 			slug,
 			originalSlug: form.originalSlug,
 			title,
 			description,
-			date: $('#f-date').value,
 			updatedDate: $('#f-updated').value,
 			tags: form.tags,
 			draft: $('#f-draft').checked,
@@ -1035,6 +1061,8 @@ async function saveEntry() {
 		form.imageUpload = null;
 		form.image = result.image ?? '';
 		form.imagePreview = form.image;
+		form.collection = result.collection;
+		form.originalCollection = result.collection;
 		form.originalSlug = result.slug;
 		form.slugTouched = true;
 
@@ -1046,9 +1074,11 @@ async function saveEntry() {
 		toast('İçerik başarıyla kaydedildi.');
 
 		$('#editor-title').textContent = title;
-		$('#editor-path').textContent = `src/content/${form.collection}/${result.slug}.md`;
+		$('#f-collection').value = result.collection;
+		$('#f-date').value = result.publishedAt || (!result.draft && result.date) || '';
 		$('#btn-site-preview').hidden = false;
-		updateSlugHint();
+		syncCollectionUi();
+		syncFeaturedState();
 	} catch (error) {
 		notice('#editor-message', esc(error.message), 'error');
 		toast(error.message, 'error');

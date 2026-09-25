@@ -16,6 +16,7 @@ const MANAGED_KEYS = [
 	'title',
 	'description',
 	'date',
+	'publishedAt',
 	'updatedDate',
 	'category',
 	'tags',
@@ -25,6 +26,8 @@ const MANAGED_KEYS = [
 	'image',
 	'imageAlt',
 ];
+
+const ISTANBUL_TIME_ZONE = 'Europe/Istanbul';
 
 const FRONTMATTER_RE = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n([\s\S]*))?$/;
 
@@ -54,19 +57,56 @@ export function parseFile(raw) {
 	return { data, body: match[2] ?? '' };
 }
 
-/** Tarihi her zaman UTC temelli YYYY-MM-DD metnine çevirir (site de UTC kullanıyor). */
+/** Tarihi dosyada tutulan YYYY-MM-DD metnine çevirir. */
 export function toDateString(value) {
 	if (value == null || value === '') return '';
 	if (value instanceof Date) {
 		if (Number.isNaN(value.getTime())) return '';
-		return value.toISOString().slice(0, 10);
+		return istanbulDateString(value);
 	}
 	const text = String(value).trim();
 	const direct = /^(\d{4}-\d{2}-\d{2})/.exec(text);
 	if (direct) return direct[1];
 	const parsed = new Date(text);
 	if (Number.isNaN(parsed.getTime())) return '';
-	return parsed.toISOString().slice(0, 10);
+	return istanbulDateString(parsed);
+}
+
+/** Europe/Istanbul takvim günü, YYYY-MM-DD. */
+export function istanbulDateString(now = new Date()) {
+	return new Intl.DateTimeFormat('en-CA', {
+		timeZone: ISTANBUL_TIME_ZONE,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+	}).format(now);
+}
+
+/**
+ * Yayın tarihini sunucu tarafında çözer.
+ * İlk yayın anında İstanbul günü yazılır; sonraki kayıtlar ve yeniden yayın bu değeri korur.
+ * İstemciden gelen tarih kullanılmaz.
+ */
+export function resolvePublishDates(original, { isUpdate, publishing }) {
+	const existingPublishedAt = toDateString(original?.publishedAt);
+	const existingDate = toDateString(original?.date);
+	const wasLive = isUpdate && original?.draft === false;
+	const wasPublished = Boolean(existingPublishedAt) || (wasLive && Boolean(existingDate));
+
+	if (wasPublished) {
+		const kept = existingPublishedAt || existingDate;
+		return { date: kept, publishedAt: kept };
+	}
+
+	if (publishing) {
+		const now = istanbulDateString();
+		return { date: now, publishedAt: now };
+	}
+
+	return {
+		date: existingDate || istanbulDateString(),
+		publishedAt: '',
+	};
 }
 
 /** YYYY-MM-DD biçimini ve gerçek bir takvim günü olduğunu doğrular. */
@@ -104,7 +144,7 @@ function scalar(value) {
 }
 
 function emit(key, value) {
-	if (key === 'date' || key === 'updatedDate') {
+	if (key === 'date' || key === 'updatedDate' || key === 'publishedAt') {
 		return `${key}: ${toDateString(value)}`;
 	}
 	if (key === 'tags') {

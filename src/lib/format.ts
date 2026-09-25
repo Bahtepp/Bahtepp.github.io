@@ -1,17 +1,26 @@
 import { siteConfig } from '../site.config.ts';
 
+const DISPLAY_TIME_ZONE = 'Europe/Istanbul';
+
 const longDate = new Intl.DateTimeFormat('tr-TR', {
 	day: 'numeric',
 	month: 'long',
 	year: 'numeric',
-	timeZone: 'UTC',
+	timeZone: DISPLAY_TIME_ZONE,
 });
 
 const shortDate = new Intl.DateTimeFormat('tr-TR', {
 	day: 'numeric',
 	month: 'short',
 	year: 'numeric',
-	timeZone: 'UTC',
+	timeZone: DISPLAY_TIME_ZONE,
+});
+
+const isoDate = new Intl.DateTimeFormat('en-CA', {
+	timeZone: DISPLAY_TIME_ZONE,
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit',
 });
 
 /** 24 Eylül 2026 */
@@ -26,7 +35,7 @@ export function formatDateShort(date: Date): string {
 
 /** <time datetime="..."> için makine okunur tarih. */
 export function toISODate(date: Date): string {
-	return date.toISOString().slice(0, 10);
+	return isoDate.format(date);
 }
 
 /** Etiketleri URL'de kullanılabilir hale getirir: "Yapay Zekâ" -> "yapay-zeka" */

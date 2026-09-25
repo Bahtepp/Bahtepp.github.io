@@ -26,7 +26,7 @@ import {
 import { siteConfig } from '../../src/site.config.ts';
 import * as store from './lib/store.mjs';
 import * as git from './lib/git.mjs';
-import { joinFootnoteDefinitions } from './lib/frontmatter.mjs';
+import { istanbulDateString, joinFootnoteDefinitions } from './lib/frontmatter.mjs';
 import { renderMarkdown } from './lib/preview.mjs';
 import * as about from './lib/about.mjs';
 
@@ -194,7 +194,7 @@ const routes = {
 				urlBase: c.urlBase,
 			})),
 			site: { name: siteConfig.siteName, author: siteConfig.author },
-			today: new Date().toISOString().slice(0, 10),
+			today: istanbulDateString(),
 			devUrl: `http://localhost:${DEV_PORT}`,
 			devRunning,
 			items: list.items,

@@ -2,6 +2,7 @@
 title: "Türkiye Pazarında Popülerlik Kazanmış Elektrikli Otomobillerin kWh Tüketimi"
 description: "Elektrikli otomobil almayı düşünenleri bilinçlendirmek ve farkındalığı artırmak üzere yapılmış bir araştırmadır."
 date: 2026-09-24
+publishedAt: 2026-09-24
 category: "Araştırma"
 tags:
   - togg
@@ -12,7 +13,7 @@ tags:
   - kgm
   - suv
 draft: false
-featured: false
+featured: true
 image: "/images/elektrikli-arac-1.webp"
 ---
 

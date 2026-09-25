@@ -88,11 +88,12 @@ export async function getAllPosts(): Promise<Post[]> {
 
 /**
  * Ana sayfada gösterilecek öne çıkan yazı.
- * `featured: true` olanların en yenisi seçilir; hiçbiri yoksa en yeni içerik kullanılır.
+ * Yalnızca `featured: true` olanlar adaydır; birden fazlaysa en yenisi seçilir.
+ * Hiçbiri işaretli değilse bölüm gösterilmez.
  */
 export async function getFeaturedPost(): Promise<Post | undefined> {
 	const posts = await getAllPosts();
-	return posts.find((post) => post.data.featured) ?? posts[0];
+	return posts.find((post) => post.data.featured === true);
 }
 
 /** Aynı türdeki bir önceki ve bir sonraki yazı (makale sonu gezinmesi için). */
