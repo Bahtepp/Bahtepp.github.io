@@ -418,14 +418,14 @@ export async function saveImage(upload) {
 		);
 	}
 
-	const optimized = await optimizeUploadedImage(buffer);
+	const optimized = await optimizeUploadedImage(buffer, ext);
 	const stem = slugify(path.basename(rawName, ext)) || 'gorsel';
 	await fs.mkdir(IMAGES_DIR, { recursive: true });
 
 	// Var olan bir görselin üzerine yazılmaz; gerekirse sonuna sayı eklenir.
-	let fileName = `${stem}.webp`;
+	let fileName = `${stem}${ext}`;
 	for (let n = 2; await exists(imageFilePath(fileName)); n += 1) {
-		fileName = `${stem}-${n}.webp`;
+		fileName = `${stem}-${n}${ext}`;
 		if (n > 200) throw new AdminError('Uygun bir görsel adı bulunamadı.');
 	}
 
@@ -436,10 +436,10 @@ export async function saveImage(upload) {
 
 /**
  * Yüklenen raster görseli site için küçültür.
- * EXIF yönü düzeltilir, uzun kenar 1600px'i aşmaz, çıktı WebP olur.
+ * EXIF yönü düzeltilir, uzun kenar 1600px'i aşmaz, dosya kendi uzantısında kalır.
  * Orijinal daha küçükse büyütülmez. Eski public/images dosyalarına dokunulmaz.
  */
-async function optimizeUploadedImage(buffer) {
+async function optimizeUploadedImage(buffer, ext) {
 	try {
 		const input = sharp(buffer, { failOn: 'none', animated: false, limitInputPixels: 40_000_000 });
 		const meta = await input.metadata();
@@ -447,17 +447,20 @@ async function optimizeUploadedImage(buffer) {
 			throw new AdminError('Görsel okunamadı. Dosya bozuk olabilir.');
 		}
 
-		const quality = meta.format === 'png' ? 90 : 82;
-		return await input
-			.rotate()
-			.resize({
-				width: MAX_IMAGE_EDGE,
-				height: MAX_IMAGE_EDGE,
-				fit: 'inside',
-				withoutEnlargement: true,
-			})
-			.webp({ quality, effort: 4, smartSubsample: true })
-			.toBuffer();
+		const pipeline = input.rotate().resize({
+			width: MAX_IMAGE_EDGE,
+			height: MAX_IMAGE_EDGE,
+			fit: 'inside',
+			withoutEnlargement: true,
+		});
+
+		if (ext === '.png') {
+			return await pipeline.png({ compressionLevel: 9, effort: 9 }).toBuffer();
+		}
+		if (ext === '.webp') {
+			return await pipeline.webp({ quality: 82, effort: 4, smartSubsample: true }).toBuffer();
+		}
+		return await pipeline.jpeg({ quality: 82, mozjpeg: true }).toBuffer();
 	} catch (error) {
 		if (error instanceof AdminError) throw error;
 		throw new AdminError('Görsel işlenemedi. JPG, PNG veya WebP yükle.');
