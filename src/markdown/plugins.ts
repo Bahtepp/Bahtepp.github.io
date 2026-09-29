@@ -39,6 +39,21 @@ export const tableWrapPlugin = defineHastPlugin({
 });
 
 /**
+ * Kapak görselleri şablonda eager kalır. Markdown içindeki görseller
+ * ilk ekranın altında olduğu için lazy yüklenir.
+ */
+export const contentImagesPlugin = defineHastPlugin({
+	name: 'bahtep-content-images',
+	element: {
+		filter: ['img'],
+		visit(node, ctx) {
+			if (!node.properties?.loading) ctx.setProperty(node, 'loading', 'lazy');
+			if (!node.properties?.decoding) ctx.setProperty(node, 'decoding', 'async');
+		},
+	},
+});
+
+/**
  * Markdown özellikleri tek yerde tutulur, böylece hem site build'i
  * (astro.config.mjs) hem yerel yönetim panelinin önizlemesi aynı
  * kuralları kullanır ve dipnot başlıkları birbirinden ayrı düşmez.
@@ -56,4 +71,4 @@ export const markdownFeatures: SatteriFeatures = {
 };
 
 /** Site ve önizlemenin paylaştığı hast eklentileri. */
-export const markdownHastPlugins = [externalLinksPlugin, tableWrapPlugin];
+export const markdownHastPlugins = [externalLinksPlugin, tableWrapPlugin, contentImagesPlugin];

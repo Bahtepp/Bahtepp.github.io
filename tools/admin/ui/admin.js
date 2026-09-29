@@ -578,11 +578,11 @@ async function attachImageFile(file) {
 		throw new Error(`Bu biçim kabul edilmiyor. İzin verilenler: ${allowed.join(', ')}`);
 	}
 	if (file.size > limit * 1024 * 1024) {
-		throw new Error(`Görsel çok büyük (${formatSize(file.size)}). Sınır ${limit} MB.`);
+		throw new Error(`Dosya çok büyük (${formatSize(file.size)}). Sınır ${limit} MB.`);
 	}
 
 	const data = await readFileAsBase64(file);
-	// Dosya public/images içine kaydetme adımında kopyalanır; şimdilik yalnız önizleme.
+	// Dosya public/images içine kaydetme adımında küçültülür; şimdilik yalnız önizleme.
 	state.form.imageUpload = { name: file.name, data };
 	state.form.image = '';
 	state.form.imagePreview = `data:${file.type};base64,${data}`;
@@ -602,7 +602,7 @@ function renderCover() {
 	$('#image-alt-field').hidden = !hasImage;
 
 	const label = form.imageUpload
-		? `Kaydedince <code>public/images/</code> içine kopyalanacak: ${esc(form.imageUpload.name)}`
+		? `Kaydedince görsel küçültülüp <code>public/images/</code> içine kaydedilecek.`
 		: form.image
 			? `<code>${esc(form.image)}</code>`
 			: '';
@@ -1133,6 +1133,15 @@ function bindMedia() {
 		event.target.value = '';
 		if (!file) return;
 		try {
+			const limit = state.boot.limits.imageMb;
+			const allowed = state.boot.limits.imageExtensions;
+			const ext = `.${file.name.split('.').pop()?.toLowerCase()}`;
+			if (!allowed.includes(ext)) {
+				throw new Error(`Bu biçim kabul edilmiyor. İzin verilenler: ${allowed.join(', ')}`);
+			}
+			if (file.size > limit * 1024 * 1024) {
+				throw new Error(`Dosya çok büyük (${formatSize(file.size)}). Sınır ${limit} MB.`);
+			}
 			const data = await readFileAsBase64(file);
 			const result = await api('/api/save-image', { name: file.name, data });
 			notice('#media-message', `Görsel eklendi: <code>${esc(result.path)}</code>`);
@@ -1525,7 +1534,7 @@ async function attachAboutImage(file) {
 		throw new Error(`Bu biçim kabul edilmiyor. İzin verilenler: ${allowed.join(', ')}`);
 	}
 	if (file.size > limit * 1024 * 1024) {
-		throw new Error(`Görsel çok büyük (${formatSize(file.size)}). Sınır ${limit} MB.`);
+		throw new Error(`Dosya çok büyük (${formatSize(file.size)}). Sınır ${limit} MB.`);
 	}
 
 	const data = await readFileAsBase64(file);

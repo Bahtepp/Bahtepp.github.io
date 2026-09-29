@@ -72,11 +72,12 @@ const section = collectionMeta[post.collection];
 		{
 			data.image && (
 				<div class="wrap article__cover-wrap">
-					<img
+						<img
 						class="cover article__cover"
 						src={data.image}
 						alt={data.imageAlt ?? ''}
 						loading="eager"
+						fetchpriority="high"
 						decoding="async"
 					/>
 				</div>
@@ -193,9 +194,19 @@ const section = collectionMeta[post.collection];
 		max-width: var(--measure);
 	}
 
+	/*
+		Tek sütun. minmax(0, 1fr) uzun URL ve tabloların min-content
+		genişliğiyle sayfayı yatay taşmasını engeller; kaydırma kendi kutusunda kalır.
+	*/
 	.article__body {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 2.5rem;
+	}
+
+	.article__content,
+	.article__aside {
+		min-width: 0;
 	}
 
 	.article__footer {

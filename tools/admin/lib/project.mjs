@@ -59,6 +59,12 @@ export const IMAGE_LIST_EXTENSIONS = [...IMAGE_UPLOAD_EXTENSIONS, '.svg', '.avif
 /** Yüklenen bir görsel için üst sınır. */
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
+/**
+ * Kayıttan önce uzun kenar bu değeri aşarsa küçültülür.
+ * Okuma sütunu yaklaşık 700px; 1600px retina için yeterli, daha küçük dosya büyütülmez.
+ */
+export const MAX_IMAGE_EDGE = 1600;
+
 /** İstek gövdesi üst sınırı (base64 görsel şişmesine yer bırakır). */
 export const MAX_BODY_BYTES = 12 * 1024 * 1024;
 

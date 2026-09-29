@@ -120,8 +120,8 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
 
 	.menu-toggle {
 		display: none;
-		width: 2.1rem;
-		height: 2.1rem;
+		width: 2.75rem;
+		height: 2.75rem;
 		place-items: center;
 		color: var(--text-muted);
 	}
@@ -201,9 +201,20 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
 	const toggle = document.getElementById('menu-toggle');
 	const menu = document.getElementById('mobile-menu');
 
+	const setMenuOpen = (open) => {
+		toggle?.setAttribute('aria-expanded', String(open));
+		menu?.toggleAttribute('hidden', !open);
+	};
+
 	toggle?.addEventListener('click', () => {
 		const open = toggle.getAttribute('aria-expanded') === 'true';
-		toggle.setAttribute('aria-expanded', String(!open));
-		menu?.toggleAttribute('hidden', open);
+		setMenuOpen(!open);
+	});
+
+	document.addEventListener('keydown', (event) => {
+		if (event.key !== 'Escape') return;
+		if (toggle?.getAttribute('aria-expanded') !== 'true') return;
+		setMenuOpen(false);
+		toggle?.focus();
 	});
 </script>

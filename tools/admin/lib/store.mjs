@@ -7,6 +7,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import net from 'node:net';
+import sharp from 'sharp';
 
 import { slugifyTag } from '../../../src/lib/format.ts';
 import { siteConfig } from '../../../src/site.config.ts';
@@ -19,6 +20,7 @@ import {
 	IMAGE_LIST_EXTENSIONS,
 	IMAGE_UPLOAD_EXTENSIONS,
 	MAX_IMAGE_BYTES,
+	MAX_IMAGE_EDGE,
 	contentFilePath,
 	imageFilePath,
 	requireCollection,
@@ -412,23 +414,54 @@ export async function saveImage(upload) {
 	if (buffer.length === 0) throw new AdminError('Görsel dosyası boş.');
 	if (buffer.length > MAX_IMAGE_BYTES) {
 		throw new AdminError(
-			`Görsel çok büyük (${(buffer.length / 1024 / 1024).toFixed(1)} MB). Sınır ${MAX_IMAGE_BYTES / 1024 / 1024} MB.`,
+			`Dosya çok büyük (${(buffer.length / 1024 / 1024).toFixed(1)} MB). Sınır ${MAX_IMAGE_BYTES / 1024 / 1024} MB.`,
 		);
 	}
 
+	const optimized = await optimizeUploadedImage(buffer);
 	const stem = slugify(path.basename(rawName, ext)) || 'gorsel';
 	await fs.mkdir(IMAGES_DIR, { recursive: true });
 
 	// Var olan bir görselin üzerine yazılmaz; gerekirse sonuna sayı eklenir.
-	let fileName = `${stem}${ext}`;
+	let fileName = `${stem}.webp`;
 	for (let n = 2; await exists(imageFilePath(fileName)); n += 1) {
-		fileName = `${stem}-${n}${ext}`;
+		fileName = `${stem}-${n}.webp`;
 		if (n > 200) throw new AdminError('Uygun bir görsel adı bulunamadı.');
 	}
 
 	const target = imageFilePath(fileName);
-	await fs.writeFile(target, buffer, { flag: 'wx' });
-	return { name: fileName, path: `/images/${fileName}`, size: buffer.length };
+	await fs.writeFile(target, optimized, { flag: 'wx' });
+	return { name: fileName, path: `/images/${fileName}`, size: optimized.length };
+}
+
+/**
+ * Yüklenen raster görseli site için küçültür.
+ * EXIF yönü düzeltilir, uzun kenar 1600px'i aşmaz, çıktı WebP olur.
+ * Orijinal daha küçükse büyütülmez. Eski public/images dosyalarına dokunulmaz.
+ */
+async function optimizeUploadedImage(buffer) {
+	try {
+		const input = sharp(buffer, { failOn: 'none', animated: false, limitInputPixels: 40_000_000 });
+		const meta = await input.metadata();
+		if (!meta.width || !meta.height) {
+			throw new AdminError('Görsel okunamadı. Dosya bozuk olabilir.');
+		}
+
+		const quality = meta.format === 'png' ? 90 : 82;
+		return await input
+			.rotate()
+			.resize({
+				width: MAX_IMAGE_EDGE,
+				height: MAX_IMAGE_EDGE,
+				fit: 'inside',
+				withoutEnlargement: true,
+			})
+			.webp({ quality, effort: 4, smartSubsample: true })
+			.toBuffer();
+	} catch (error) {
+		if (error instanceof AdminError) throw error;
+		throw new AdminError('Görsel işlenemedi. JPG, PNG veya WebP yükle.');
+	}
 }
 
 /** Astro geliştirme sunucusu açık mı? "Sitede Önizle" bunu kullanır. */

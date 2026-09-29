@@ -32,6 +32,7 @@ const research = (await getPosts('arastirmalar')).filter((post) => post.id !== f
 							src={featured.data.image}
 							alt={featured.data.imageAlt ?? ''}
 							loading="eager"
+							fetchpriority="high"
 							decoding="async"
 						/>
 					)}
