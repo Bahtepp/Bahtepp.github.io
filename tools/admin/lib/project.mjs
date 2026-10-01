@@ -74,10 +74,11 @@ export const MAX_BODY_BYTES = 12 * 1024 * 1024;
  * araç yalnızca yerel makinede çalışır.
  */
 export class AdminError extends Error {
-	constructor(message, status = 400) {
+	constructor(message, status = 400, code = '') {
 		super(message);
 		this.name = 'AdminError';
 		this.status = status;
+		this.code = code;
 	}
 }
 

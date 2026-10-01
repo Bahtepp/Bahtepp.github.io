@@ -25,6 +25,7 @@ import {
 } from './lib/project.mjs';
 import { siteConfig } from '../../src/site.config.ts';
 import * as store from './lib/store.mjs';
+import { createAgentDraft } from './lib/agent-draft.mjs';
 import * as git from './lib/git.mjs';
 import { istanbulDateString, joinFootnoteDefinitions } from './lib/frontmatter.mjs';
 import { renderMarkdown } from './lib/preview.mjs';
@@ -220,6 +221,12 @@ const routes = {
 		return { ...result, message: 'İçerik başarıyla kaydedildi.' };
 	},
 
+	'/api/agent/draft': async (body) =>
+		createAgentDraft(body, {
+			slugify: store.slugify,
+			save: store.saveEntry,
+		}),
+
 	'/api/draft': async (body) => store.setDraft(body.collection, body.slug, body.draft),
 
 	'/api/delete': async (body) => store.deleteEntry(body.collection, body.slug, body.confirm),
@@ -292,7 +299,9 @@ function createServer(port) {
 			if (status === 500) {
 				console.error(`[admin] ${route} hatası:`, error);
 			}
-			sendJson(res, status, { ok: false, error: error.message });
+			const payload = { ok: false, error: error.message };
+			if (error instanceof AdminError && error.code) payload.code = error.code;
+			sendJson(res, status, payload);
 		}
 	});
 }

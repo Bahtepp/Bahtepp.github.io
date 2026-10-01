@@ -159,7 +159,7 @@ Bu nedenle elektrikli otomobil alırken teknik özellikler bölümünde benim g�
 
 Batarya kaç kWh?
 
-WLTP menzil kaç kilometre?
+WLTP (araçların yakıt tüketimini, elektrik menzilini ve egzoz emisyon değerlerini gerçeğe en yakın şekilde belirlemek için kullanılan uluslararası bir test prosedürü) menzil kaç kilometre?
 
 100 kilometrede kaç kWh tüketiyor?
 
@@ -173,7 +173,7 @@ Batarya kapasitesi, yanında ne kadar enerji taşıdığını gösterir.
 
 Tüketim ise o enerjiyi ne kadar iyi kullandığını gösterir.
 
-Elektrikli otomobil pazarında konuşmamız gereken asıl rakamın biraz daha fazla kWh/100 km olması gerektiğini düşünüyorum.
+Elektrikli otomobil pazarında konuşmamız gereken asıl rakamın kWh/100 km olması gerektiğini düşünüyorum.
 
 [^sarjradar]: şarjradar, 2026, <https://www.esarjradar.com/veri/?utm_source>
 [^toggtech]: togg, 2026, <https://trumore-cdn.togg.cloud/EU/TOGG_T10X_0825_CTG_TR.pdf?utm_source>
