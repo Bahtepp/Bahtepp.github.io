@@ -18,8 +18,10 @@ Bilişim sistemleri müh. öğrencisiyim. Pandemi zamanında yapay zekanın ça�
 yapabileceği bir amaleliği yani vibe coding (yapay zekaya kod yazdırma.) yapıp düşük ücretler almak ve köle gibi çalışmak yerine memur olup yerleri temizleyerek ya da masa başı iş yaparak hayata atılmak daha çok yatıyordu. Şimdiyse memur olmak çook daha mantıklı bi başlangıç gibi gözüküyor çünkü bi gün kalkıp derse gittim ve hocamın farkında bile olmadan söylediği şey bakış açımı iyice keskinleştirdi...(ilerde doktor, mühendis gibi mesleklerin tamamen bomboş olacağını düşünüyordum bize gerek kalmayacağına inanıyordum)
 
 MSKÜ-Teknoloji Fakültesinden [Prof.Dr.Osman Özkaraca](https://www.mu.edu.tr/tr/personel/osmanozkaraca) o sabah şöyle bi şey söyledi;
-> Bi doktor maksimum hayatı boyunca kaç kez deneyimleriyle veri elde edebilir? bin mi? onbin mi? lakin yapay zeka ona karşın milyonlarca insan verisiyle
-> karar verebiliyor. Ama doktorlar hep olcak çünkü oldu da yanlış yorum ve teşhiste bulundu o zaman kimi sorumlu tutucaz? kime dava açıcaz?
+> Bi doktor maksimum hayatı boyunca kaç kez ve kaç farklı vaka görebilir? bin mi? onbin mi? peki kaç vaka bilgisini analiz edebilir?  lakin yapay zeka ona karşın milyonlarca insan verisiyle ve geçmiş tüm vakalarla
+> karar verebiliyor. Mesela bir doktor kaç farklı vakayı aynı anda değerlendirip bütün korelasyonları hesaplayabilir? Ama doktorlar hep olacaklar çünkü malpraktis durumunda kimi sorumlu tutucaz? kime dava açıcaz?
+> yapay zekaya dava açılamaz. Sorumlu tutulamaz. Yani bir veriyi insandan daha komplike değerlendirip daha iyi analiz eden bi sistem olmasına rağmen sorumluluk ve hükümlülük taşımadığı için yine de doktora ve insana 
+> ihtiyacımız olacaktır.
 
 ### Eve gidip uyuyup uyandığımda kafamda şimşekler çaktı
 
